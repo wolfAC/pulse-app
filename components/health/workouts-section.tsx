@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { WorkoutCard } from "./workout-card"
-import { Dumbbell, Plus, TrendingUp, Flame, Clock } from "lucide-react"
-import type { Workout } from "@/lib/types/health"
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { WorkoutCard } from "./workout-card";
+import { Dumbbell, Plus, TrendingUp, Flame, Clock } from "lucide-react";
+import type { Workout } from "@/lib/types/health";
 
 const mockWorkouts: Workout[] = [
   {
@@ -63,24 +63,24 @@ const mockWorkouts: Workout[] = [
     caloriesBurned: 380,
     distance: 1.5,
   },
-]
+];
 
 export function WorkoutsSection() {
-  const [workouts, setWorkouts] = useState<Workout[]>(mockWorkouts)
+  const [workouts, setWorkouts] = useState<Workout[]>(mockWorkouts);
 
-  const totalCalories = workouts.reduce((sum, w) => sum + w.caloriesBurned, 0)
-  const totalDuration = workouts.reduce((sum, w) => sum + w.duration, 0)
-  const totalWorkouts = workouts.length
+  const totalCalories = workouts.reduce((sum, w) => sum + w.caloriesBurned, 0);
+  const totalDuration = workouts.reduce((sum, w) => sum + w.duration, 0);
+  const totalWorkouts = workouts.length;
 
   const formatDuration = (minutes: number) => {
-    const hours = Math.floor(minutes / 60)
-    const mins = minutes % 60
-    return `${hours}h ${mins}m`
-  }
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours}h ${mins}m`;
+  };
 
   const handleDelete = (id: string) => {
-    setWorkouts(workouts.filter(w => w.id !== id))
-  }
+    setWorkouts(workouts.filter((w) => w.id !== id));
+  };
 
   return (
     <div className="space-y-6">
@@ -94,12 +94,14 @@ export function WorkoutsSection() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{totalWorkouts}</p>
-                <p className="text-xs text-muted-foreground">Workouts this week</p>
+                <p className="text-xs text-muted-foreground">
+                  Workouts this week
+                </p>
               </div>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -107,13 +109,15 @@ export function WorkoutsSection() {
                 <Flame className="size-5 text-orange-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{totalCalories.toLocaleString()}</p>
+                <p className="text-2xl font-bold">
+                  {totalCalories.toLocaleString()}
+                </p>
                 <p className="text-xs text-muted-foreground">Calories burned</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -121,7 +125,9 @@ export function WorkoutsSection() {
                 <Clock className="size-5 text-emerald-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{formatDuration(totalDuration)}</p>
+                <p className="text-2xl font-bold">
+                  {formatDuration(totalDuration)}
+                </p>
                 <p className="text-xs text-muted-foreground">Total duration</p>
               </div>
             </div>
@@ -143,9 +149,9 @@ export function WorkoutsSection() {
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {workouts.map((workout) => (
-              <WorkoutCard 
-                key={workout.id} 
-                workout={workout} 
+              <WorkoutCard
+                key={workout.id}
+                workout={workout}
                 onDelete={handleDelete}
               />
             ))}
@@ -153,5 +159,5 @@ export function WorkoutsSection() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

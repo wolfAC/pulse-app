@@ -1,28 +1,33 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Slider } from "@/components/ui/slider"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Review, ReviewPeriod, ReviewMetrics, metricLabels } from "@/lib/types/review"
-import { Zap, Award, MessageSquare, BookOpen, Plus, X } from "lucide-react"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Slider } from "@/components/ui/slider";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Review,
+  ReviewPeriod,
+  ReviewMetrics,
+  metricLabels,
+} from "@/lib/types/review";
+import { Zap, Award, MessageSquare, BookOpen, Plus, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ReviewDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  review?: Review | null
-  onSave: (review: Omit<Review, "id" | "overallScore">) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  review?: Review | null;
+  onSave: (review: Omit<Review, "id" | "overallScore">) => void;
 }
 
 const metricIcons = {
@@ -30,7 +35,7 @@ const metricIcons = {
   quality: Award,
   communication: MessageSquare,
   learning: BookOpen,
-}
+};
 
 export function ReviewDialog({
   open,
@@ -38,79 +43,84 @@ export function ReviewDialog({
   review,
   onSave,
 }: ReviewDialogProps) {
-  const [date, setDate] = useState("")
-  const [period, setPeriod] = useState<ReviewPeriod>("daily")
+  const [date, setDate] = useState("");
+  const [period, setPeriod] = useState<ReviewPeriod>("daily");
   const [metrics, setMetrics] = useState<ReviewMetrics>({
     productivity: 75,
     quality: 75,
     communication: 75,
     learning: 75,
-  })
-  const [highlights, setHighlights] = useState<string[]>([])
-  const [blockers, setBlockers] = useState<string[]>([])
-  const [improvements, setImprovements] = useState<string[]>([])
-  const [notes, setNotes] = useState("")
-  const [newHighlight, setNewHighlight] = useState("")
-  const [newBlocker, setNewBlocker] = useState("")
-  const [newImprovement, setNewImprovement] = useState("")
+  });
+  const [highlights, setHighlights] = useState<string[]>([]);
+  const [blockers, setBlockers] = useState<string[]>([]);
+  const [improvements, setImprovements] = useState<string[]>([]);
+  const [notes, setNotes] = useState("");
+  const [newHighlight, setNewHighlight] = useState("");
+  const [newBlocker, setNewBlocker] = useState("");
+  const [newImprovement, setNewImprovement] = useState("");
 
   useEffect(() => {
     if (review) {
-      setDate(review.date)
-      setPeriod(review.period)
-      setMetrics(review.metrics)
-      setHighlights(review.highlights)
-      setBlockers(review.blockers)
-      setImprovements(review.improvements)
-      setNotes(review.notes || "")
+      setDate(review.date);
+      setPeriod(review.period);
+      setMetrics(review.metrics);
+      setHighlights(review.highlights);
+      setBlockers(review.blockers);
+      setImprovements(review.improvements);
+      setNotes(review.notes || "");
     } else {
-      const today = new Date().toISOString().split("T")[0]
-      setDate(today)
-      setPeriod("daily")
-      setMetrics({ productivity: 75, quality: 75, communication: 75, learning: 75 })
-      setHighlights([])
-      setBlockers([])
-      setImprovements([])
-      setNotes("")
+      const today = new Date().toISOString().split("T")[0];
+      setDate(today);
+      setPeriod("daily");
+      setMetrics({
+        productivity: 75,
+        quality: 75,
+        communication: 75,
+        learning: 75,
+      });
+      setHighlights([]);
+      setBlockers([]);
+      setImprovements([]);
+      setNotes("");
     }
-  }, [review, open])
+  }, [review, open]);
 
   const handleAddItem = (
     type: "highlight" | "blocker" | "improvement",
     value: string,
-    setValue: (v: string) => void
+    setValue: (v: string) => void,
   ) => {
-    if (!value.trim()) return
+    if (!value.trim()) return;
     switch (type) {
       case "highlight":
-        setHighlights([...highlights, value.trim()])
-        break
+        setHighlights([...highlights, value.trim()]);
+        break;
       case "blocker":
-        setBlockers([...blockers, value.trim()])
-        break
+        setBlockers([...blockers, value.trim()]);
+        break;
       case "improvement":
-        setImprovements([...improvements, value.trim()])
-        break
+        setImprovements([...improvements, value.trim()]);
+        break;
     }
-    setValue("")
-  }
+    setValue("");
+  };
 
   const handleRemoveItem = (
     type: "highlight" | "blocker" | "improvement",
-    index: number
+    index: number,
   ) => {
     switch (type) {
       case "highlight":
-        setHighlights(highlights.filter((_, i) => i !== index))
-        break
+        setHighlights(highlights.filter((_, i) => i !== index));
+        break;
       case "blocker":
-        setBlockers(blockers.filter((_, i) => i !== index))
-        break
+        setBlockers(blockers.filter((_, i) => i !== index));
+        break;
       case "improvement":
-        setImprovements(improvements.filter((_, i) => i !== index))
-        break
+        setImprovements(improvements.filter((_, i) => i !== index));
+        break;
     }
-  }
+  };
 
   const handleSave = () => {
     onSave({
@@ -121,9 +131,9 @@ export function ReviewDialog({
       blockers,
       improvements,
       notes: notes || undefined,
-    })
-    onOpenChange(false)
-  }
+    });
+    onOpenChange(false);
+  };
 
   const ItemInput = ({
     label,
@@ -135,14 +145,14 @@ export function ReviewDialog({
     type,
     colorClass,
   }: {
-    label: string
-    value: string
-    onChange: (v: string) => void
-    onAdd: () => void
-    items: string[]
-    onRemove: (index: number) => void
-    type: string
-    colorClass: string
+    label: string;
+    value: string;
+    onChange: (v: string) => void;
+    onAdd: () => void;
+    items: string[];
+    onRemove: (index: number) => void;
+    type: string;
+    colorClass: string;
   }) => (
     <div className="space-y-2">
       <Label className={colorClass}>{label}</Label>
@@ -168,8 +178,8 @@ export function ReviewDialog({
                 colorClass === "text-accent"
                   ? "bg-accent/20"
                   : colorClass === "text-destructive"
-                  ? "bg-destructive/20"
-                  : "bg-primary/20"
+                    ? "bg-destructive/20"
+                    : "bg-primary/20",
               )}
             >
               {item}
@@ -185,7 +195,7 @@ export function ReviewDialog({
         </div>
       )}
     </div>
-  )
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -209,11 +219,20 @@ export function ReviewDialog({
             </div>
             <div className="space-y-2">
               <Label>Period</Label>
-              <Tabs value={period} onValueChange={(v) => setPeriod(v as ReviewPeriod)}>
+              <Tabs
+                value={period}
+                onValueChange={(v) => setPeriod(v as ReviewPeriod)}
+              >
                 <TabsList className="w-full">
-                  <TabsTrigger value="daily" className="flex-1">Daily</TabsTrigger>
-                  <TabsTrigger value="weekly" className="flex-1">Weekly</TabsTrigger>
-                  <TabsTrigger value="monthly" className="flex-1">Monthly</TabsTrigger>
+                  <TabsTrigger value="daily" className="flex-1">
+                    Daily
+                  </TabsTrigger>
+                  <TabsTrigger value="weekly" className="flex-1">
+                    Weekly
+                  </TabsTrigger>
+                  <TabsTrigger value="monthly" className="flex-1">
+                    Monthly
+                  </TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
@@ -223,7 +242,7 @@ export function ReviewDialog({
           <div className="space-y-4">
             <Label>Performance Metrics</Label>
             {(Object.keys(metrics) as Array<keyof ReviewMetrics>).map((key) => {
-              const Icon = metricIcons[key]
+              const Icon = metricIcons[key];
               return (
                 <div key={key} className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -243,7 +262,7 @@ export function ReviewDialog({
                     className="w-full"
                   />
                 </div>
-              )
+              );
             })}
           </div>
 
@@ -307,5 +326,5 @@ export function ReviewDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

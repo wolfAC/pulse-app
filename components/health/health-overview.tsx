@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { MetricCard } from "./metric-card"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Moon, Footprints, Flame, Droplets, TrendingUp } from "lucide-react"
+import { MetricCard } from "./metric-card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Moon, Footprints, Flame, Droplets, TrendingUp } from "lucide-react";
 import {
   Area,
   AreaChart,
@@ -10,7 +10,7 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-} from "recharts"
+} from "recharts";
 
 const weeklyData = [
   { day: "Mon", sleep: 7.2, steps: 8500, calories: 2100, water: 2.4 },
@@ -20,7 +20,7 @@ const weeklyData = [
   { day: "Fri", sleep: 6.5, steps: 6500, calories: 2400, water: 2.0 },
   { day: "Sat", sleep: 8.5, steps: 12000, calories: 1800, water: 2.6 },
   { day: "Sun", sleep: 7.8, steps: 8432, calories: 1845, water: 2.5 },
-]
+];
 
 const metrics = [
   {
@@ -63,13 +63,19 @@ const metrics = [
     color: "text-sky-500",
     bgColor: "bg-sky-500/10",
   },
-]
+];
 
-export function HealthOverview() {
+export function HealthOverview({ viewMode = "grid" }) {
   return (
     <div className="space-y-6">
       {/* Metric Cards Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div
+        className={
+          viewMode === "grid"
+            ? "grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+            : "flex flex-col gap-4"
+        }
+      >
         {metrics.map((metric) => (
           <MetricCard key={metric.title} {...metric} />
         ))}
@@ -85,22 +91,33 @@ export function HealthOverview() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="h-[200px] w-full">
+          <div className="h-50 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={weeklyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart
+                data={weeklyData}
+                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+              >
                 <defs>
                   <linearGradient id="colorSteps" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0} />
+                    <stop
+                      offset="5%"
+                      stopColor="hsl(var(--chart-2))"
+                      stopOpacity={0.3}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor="hsl(var(--chart-2))"
+                      stopOpacity={0}
+                    />
                   </linearGradient>
                 </defs>
-                <XAxis 
-                  dataKey="day" 
+                <XAxis
+                  dataKey="day"
                   axisLine={false}
                   tickLine={false}
                   tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
                 />
-                <YAxis 
+                <YAxis
                   axisLine={false}
                   tickLine={false}
                   tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
@@ -125,7 +142,7 @@ export function HealthOverview() {
               </AreaChart>
             </ResponsiveContainer>
           </div>
-          
+
           {/* Legend */}
           <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-border">
             <div className="flex items-center gap-2">
@@ -148,5 +165,5 @@ export function HealthOverview() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
