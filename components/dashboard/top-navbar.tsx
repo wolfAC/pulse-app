@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { SidebarTrigger } from "@/components/ui/sidebar"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,24 +11,45 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Bell, Search, Command } from "lucide-react"
+} from "@/components/ui/dropdown-menu";
+import { Bell, Search, Command } from "lucide-react";
 
 const notifications = [
-  { id: 1, title: "Goal completed!", description: "You reached your daily step goal", time: "2m ago", unread: true },
-  { id: 2, title: "New achievement", description: "7-day streak unlocked", time: "1h ago", unread: true },
-  { id: 3, title: "Weekly report ready", description: "Your progress report is available", time: "3h ago", unread: false },
-]
+  {
+    id: 1,
+    title: "Goal completed!",
+    description: "You reached your daily step goal",
+    time: "2m ago",
+    unread: true,
+  },
+  {
+    id: 2,
+    title: "New achievement",
+    description: "7-day streak unlocked",
+    time: "1h ago",
+    unread: true,
+  },
+  {
+    id: 3,
+    title: "Weekly report ready",
+    description: "Your progress report is available",
+    time: "3h ago",
+    unread: false,
+  },
+];
 
 export function TopNavbar() {
-  const unreadCount = notifications.filter(n => n.unread).length
+  const unreadCount = notifications.filter((n) => n.unread).length;
 
   return (
-    <header className="sticky top-0 z-50 flex h-14 items-center gap-4 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 lg:px-6">
+    <header className="sticky top-0 z-50 flex h-14 items-center gap-4 border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 px-4 lg:px-6">
       <SidebarTrigger className="-ml-1" />
-      
+
       <div className="flex-1">
-        <Button variant="outline" className="relative h-9 w-full max-w-sm justify-start text-sm text-muted-foreground sm:w-64 md:w-80">
+        <Button
+          variant="outline"
+          className="relative h-9 w-full max-w-sm justify-start text-sm text-muted-foreground sm:w-64 md:w-80"
+        >
           <Search className="mr-2 size-4" />
           <span className="hidden sm:inline-flex">Search anything...</span>
           <span className="sm:hidden">Search...</span>
@@ -60,15 +81,24 @@ export function TopNavbar() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             {notifications.map((notification) => (
-              <DropdownMenuItem key={notification.id} className="flex flex-col items-start gap-1 p-3 cursor-pointer">
+              <DropdownMenuItem
+                key={notification.id}
+                className="flex flex-col items-start gap-1 p-3 cursor-pointer"
+              >
                 <div className="flex items-center gap-2 w-full">
-                  <span className="font-medium text-sm">{notification.title}</span>
+                  <span className="font-medium text-sm">
+                    {notification.title}
+                  </span>
                   {notification.unread && (
                     <span className="size-2 rounded-full bg-primary" />
                   )}
                 </div>
-                <span className="text-xs text-muted-foreground">{notification.description}</span>
-                <span className="text-xs text-muted-foreground">{notification.time}</span>
+                <span className="text-xs text-muted-foreground">
+                  {notification.description}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {notification.time}
+                </span>
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
@@ -82,7 +112,10 @@ export function TopNavbar() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative size-9 rounded-full">
               <Avatar className="size-8">
-                <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face" alt="User" />
+                <AvatarImage
+                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face"
+                  alt="User"
+                />
                 <AvatarFallback>JD</AvatarFallback>
               </Avatar>
             </Button>
@@ -91,7 +124,9 @@ export function TopNavbar() {
             <DropdownMenuLabel>
               <div className="flex flex-col gap-1">
                 <span>John Doe</span>
-                <span className="text-xs font-normal text-muted-foreground">john@example.com</span>
+                <span className="text-xs font-normal text-muted-foreground">
+                  john@example.com
+                </span>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
@@ -99,10 +134,12 @@ export function TopNavbar() {
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuItem>Billing</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">Sign out</DropdownMenuItem>
+            <DropdownMenuItem className="text-destructive">
+              Sign out
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
     </header>
-  )
+  );
 }

@@ -1,8 +1,14 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { BarChart3, TrendingUp } from "lucide-react"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { BarChart3, TrendingUp } from "lucide-react";
 import {
   AreaChart,
   Area,
@@ -11,7 +17,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-} from "recharts"
+} from "recharts";
 
 const data = [
   { name: "Mon", productivity: 65, focus: 45 },
@@ -21,17 +27,22 @@ const data = [
   { name: "Fri", productivity: 92, focus: 85 },
   { name: "Sat", productivity: 55, focus: 40 },
   { name: "Sun", productivity: 48, focus: 35 },
-]
+];
 
 export function WeeklyActivityChart() {
   return (
     <Card className="col-span-full lg:col-span-2">
       <CardHeader className="flex flex-row items-start justify-between pb-2">
         <div>
-          <CardTitle className="text-sm font-medium text-muted-foreground">Weekly Activity</CardTitle>
+          <CardTitle className="text-sm font-medium text-muted-foreground">
+            Weekly Activity
+          </CardTitle>
           <CardDescription className="mt-1 flex items-center gap-2">
             <span className="text-2xl font-bold text-foreground">42.5h</span>
-            <Badge variant="secondary" className="bg-accent/20 text-accent gap-1">
+            <Badge
+              variant="secondary"
+              className="bg-accent/20 text-accent gap-1"
+            >
               <TrendingUp className="size-3" />
               +8.2%
             </Badge>
@@ -42,39 +53,68 @@ export function WeeklyActivityChart() {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="h-[200px] w-full">
+        <div className="h-50 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <AreaChart
+              data={data}
+              margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+            >
               <defs>
-                <linearGradient id="colorProductivity" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="oklch(0.65 0.2 250)" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="oklch(0.65 0.2 250)" stopOpacity={0} />
+                <linearGradient
+                  id="colorProductivity"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop
+                    offset="5%"
+                    stopColor="oklch(0.65 0.2 250)"
+                    stopOpacity={0.3}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="oklch(0.65 0.2 250)"
+                    stopOpacity={0}
+                  />
                 </linearGradient>
                 <linearGradient id="colorFocus" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="oklch(0.65 0.15 165)" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="oklch(0.65 0.15 165)" stopOpacity={0} />
+                  <stop
+                    offset="5%"
+                    stopColor="oklch(0.65 0.15 165)"
+                    stopOpacity={0.3}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="oklch(0.65 0.15 165)"
+                    stopOpacity={0}
+                  />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.22 0 0)" vertical={false} />
-              <XAxis 
-                dataKey="name" 
-                axisLine={false} 
-                tickLine={false} 
-                tick={{ fill: 'oklch(0.55 0 0)', fontSize: 12 }}
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="oklch(0.22 0 0)"
+                vertical={false}
               />
-              <YAxis 
-                axisLine={false} 
-                tickLine={false} 
-                tick={{ fill: 'oklch(0.55 0 0)', fontSize: 12 }}
+              <XAxis
+                dataKey="name"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "oklch(0.55 0 0)", fontSize: 12 }}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "oklch(0.55 0 0)", fontSize: 12 }}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'oklch(0.12 0 0)',
-                  border: '1px solid oklch(0.22 0 0)',
-                  borderRadius: '8px',
-                  color: 'oklch(0.95 0 0)',
+                  backgroundColor: "oklch(0.12 0 0)",
+                  border: "1px solid oklch(0.22 0 0)",
+                  borderRadius: "8px",
+                  color: "oklch(0.95 0 0)",
                 }}
-                labelStyle={{ color: 'oklch(0.95 0 0)' }}
+                labelStyle={{ color: "oklch(0.95 0 0)" }}
               />
               <Area
                 type="monotone"
@@ -107,5 +147,5 @@ export function WeeklyActivityChart() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

@@ -1,5 +1,10 @@
-"use client"
+"use client";
 
+import {
+  primaryNavItems,
+  secondaryNavItems,
+} from "@/components/navigation/nav-context";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Sidebar,
   SidebarContent,
@@ -11,26 +16,16 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import {
-  Settings,
-  HelpCircle,
-  LogOut,
-  Zap,
-} from "lucide-react"
-import { useNav, navItems } from "@/components/navigation/nav-context"
-
-const secondaryNavItems = [
-  { title: "Settings", icon: Settings },
-  { title: "Help", icon: HelpCircle },
-]
+} from "@/components/ui/sidebar";
+import { LogOut, Zap } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export function AppSidebar() {
-  const { activeSection, scrollToSection } = useNav()
-
+  const pathname = usePathname();
   return (
     <Sidebar collapsible="icon">
+      {/* Header */}
       <SidebarHeader className="border-b border-sidebar-border pb-4">
         <SidebarMenu>
           <SidebarMenuItem>
@@ -46,35 +41,51 @@ export function AppSidebar() {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
+
+      {/* Content */}
       <SidebarContent>
+        {/* Main */}
         <SidebarGroup>
           <SidebarGroupLabel>Main</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.map((item) => (
-                <SidebarMenuItem key={item.id}>
-                  <SidebarMenuButton
-                    isActive={activeSection === item.id}
-                    tooltip={item.label}
-                    onClick={() => scrollToSection(item.id)}
-                  >
-                    <item.icon className="size-4" />
-                    <span>{item.label}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {primaryNavItems.map((item) => {
+                const isActive =
+                  item.href === "/"
+                    ? pathname === "/"
+                    : pathname.startsWith(item.href);
+
+                return (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive}
+                      tooltip={item.label}
+                    >
+                      <Link href={item.href}>
+                        <item.icon className="size-4" />
+                        <span>{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Support */}
         <SidebarGroup>
           <SidebarGroupLabel>Support</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {secondaryNavItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton tooltip={item.title}>
-                    <item.icon className="size-4" />
-                    <span>{item.title}</span>
+                <SidebarMenuItem key={item.label}>
+                  <SidebarMenuButton asChild tooltip={item.label}>
+                    <Link href={item.href}>
+                      <item.icon className="size-4" />
+                      <span>{item.label}</span>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -82,12 +93,16 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      {/* Footer */}
       <SidebarFooter className="border-t border-sidebar-border pt-2">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" className="gap-3">
               <Avatar className="size-8">
-                <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face" alt="User" />
+                <AvatarImage
+                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face"
+                  alt="User"
+                />
                 <AvatarFallback>JD</AvatarFallback>
               </Avatar>
               <div className="flex flex-col gap-0.5 leading-none">
@@ -97,7 +112,10 @@ export function AppSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton tooltip="Sign Out" className="text-muted-foreground hover:text-destructive">
+            <SidebarMenuButton
+              tooltip="Sign Out"
+              className="text-muted-foreground hover:text-destructive"
+            >
               <LogOut className="size-4" />
               <span>Sign Out</span>
             </SidebarMenuButton>
@@ -105,5 +123,5 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }

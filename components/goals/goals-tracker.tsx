@@ -1,19 +1,21 @@
-"use client"
+"use client";
 
-import { useState, useMemo } from "react"
-import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Plus, LayoutGrid, List } from "lucide-react"
-import { GoalCard } from "./goal-card"
-import { GoalDialog } from "./goal-dialog"
-import { GoalDetailsSheet } from "./goal-details-sheet"
-import type { Goal, GoalStatus } from "@/lib/types/goal"
+import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { Goal, GoalStatus } from "@/lib/types/goal";
+import { LayoutGrid, List, Plus } from "lucide-react";
+import { useMemo, useState } from "react";
+import { GoalCard } from "./goal-card";
+import { GoalDetailsSheet } from "./goal-details-sheet";
+import { GoalDialog } from "./goal-dialog";
 
 const initialGoals: Goal[] = [
   {
     id: "1",
     title: "Learn TypeScript",
-    description: "Master TypeScript fundamentals and advanced patterns for better code quality.",
+    description:
+      "Master TypeScript fundamentals and advanced patterns for better code quality.",
     progress: 65,
     priority: "high",
     status: "active",
@@ -73,7 +75,8 @@ const initialGoals: Goal[] = [
   {
     id: "4",
     title: "Complete React Course",
-    description: "Finished the advanced React patterns course with certification.",
+    description:
+      "Finished the advanced React patterns course with certification.",
     progress: 100,
     priority: "high",
     status: "completed",
@@ -90,29 +93,29 @@ const initialGoals: Goal[] = [
     ],
     createdAt: "2025-12-01",
   },
-]
+];
 
-type TabValue = "active" | "completed" | "all"
+type TabValue = "active" | "completed" | "all";
 
 export function GoalsTracker() {
-  const [goals, setGoals] = useState<Goal[]>(initialGoals)
-  const [activeTab, setActiveTab] = useState<TabValue>("active")
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [editingGoal, setEditingGoal] = useState<Goal | null>(null)
-  const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null)
-  const [detailsOpen, setDetailsOpen] = useState(false)
+  const [goals, setGoals] = useState<Goal[]>(initialGoals);
+  const [activeTab, setActiveTab] = useState<TabValue>("active");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
+  const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   const filteredGoals = useMemo(() => {
-    if (activeTab === "all") return goals
-    return goals.filter((goal) => goal.status === activeTab)
-  }, [goals, activeTab])
+    if (activeTab === "all") return goals;
+    return goals.filter((goal) => goal.status === activeTab);
+  }, [goals, activeTab]);
 
   const handleSaveGoal = (goalData: Partial<Goal>) => {
     if (goalData.id) {
       setGoals((prev) =>
-        prev.map((g) => (g.id === goalData.id ? { ...g, ...goalData } : g))
-      )
+        prev.map((g) => (g.id === goalData.id ? { ...g, ...goalData } : g)),
+      );
     } else {
       const newGoal: Goal = {
         id: Date.now().toString(),
@@ -125,96 +128,100 @@ export function GoalsTracker() {
         milestones: [],
         tasks: [],
         createdAt: new Date().toISOString().split("T")[0],
-      }
-      setGoals((prev) => [newGoal, ...prev])
+      };
+      setGoals((prev) => [newGoal, ...prev]);
     }
-    setEditingGoal(null)
-  }
+    setEditingGoal(null);
+  };
 
   const handleEditGoal = (goal: Goal) => {
-    setEditingGoal(goal)
-    setDialogOpen(true)
-  }
+    setEditingGoal(goal);
+    setDialogOpen(true);
+  };
 
   const handleDeleteGoal = (id: string) => {
-    setGoals((prev) => prev.filter((g) => g.id !== id))
-  }
+    setGoals((prev) => prev.filter((g) => g.id !== id));
+  };
 
   const handleSelectGoal = (goal: Goal) => {
-    setSelectedGoal(goal)
-    setDetailsOpen(true)
-  }
+    setSelectedGoal(goal);
+    setDetailsOpen(true);
+  };
 
   const calculateProgress = (goal: Goal): number => {
-    const totalItems = goal.milestones.length + goal.tasks.length
-    if (totalItems === 0) return goal.progress
+    const totalItems = goal.milestones.length + goal.tasks.length;
+    if (totalItems === 0) return goal.progress;
     const completedItems =
       goal.milestones.filter((m) => m.completed).length +
-      goal.tasks.filter((t) => t.completed).length
-    return Math.round((completedItems / totalItems) * 100)
-  }
+      goal.tasks.filter((t) => t.completed).length;
+    return Math.round((completedItems / totalItems) * 100);
+  };
 
   const handleToggleMilestone = (goalId: string, milestoneId: string) => {
     setGoals((prev) =>
       prev.map((g) => {
-        if (g.id !== goalId) return g
+        if (g.id !== goalId) return g;
         const updatedMilestones = g.milestones.map((m) =>
-          m.id === milestoneId ? { ...m, completed: !m.completed } : m
-        )
-        const updatedGoal = { ...g, milestones: updatedMilestones }
-        const newProgress = calculateProgress(updatedGoal)
-        const newStatus: GoalStatus = newProgress === 100 ? "completed" : "active"
-        return { ...updatedGoal, progress: newProgress, status: newStatus }
-      })
-    )
+          m.id === milestoneId ? { ...m, completed: !m.completed } : m,
+        );
+        const updatedGoal = { ...g, milestones: updatedMilestones };
+        const newProgress = calculateProgress(updatedGoal);
+        const newStatus: GoalStatus =
+          newProgress === 100 ? "completed" : "active";
+        return { ...updatedGoal, progress: newProgress, status: newStatus };
+      }),
+    );
     setSelectedGoal((prev) => {
-      if (!prev || prev.id !== goalId) return prev
+      if (!prev || prev.id !== goalId) return prev;
       const updatedMilestones = prev.milestones.map((m) =>
-        m.id === milestoneId ? { ...m, completed: !m.completed } : m
-      )
-      const updatedGoal = { ...prev, milestones: updatedMilestones }
-      const newProgress = calculateProgress(updatedGoal)
-      const newStatus: GoalStatus = newProgress === 100 ? "completed" : "active"
-      return { ...updatedGoal, progress: newProgress, status: newStatus }
-    })
-  }
+        m.id === milestoneId ? { ...m, completed: !m.completed } : m,
+      );
+      const updatedGoal = { ...prev, milestones: updatedMilestones };
+      const newProgress = calculateProgress(updatedGoal);
+      const newStatus: GoalStatus =
+        newProgress === 100 ? "completed" : "active";
+      return { ...updatedGoal, progress: newProgress, status: newStatus };
+    });
+  };
 
   const handleToggleTask = (goalId: string, taskId: string) => {
     setGoals((prev) =>
       prev.map((g) => {
-        if (g.id !== goalId) return g
+        if (g.id !== goalId) return g;
         const updatedTasks = g.tasks.map((t) =>
-          t.id === taskId ? { ...t, completed: !t.completed } : t
-        )
-        const updatedGoal = { ...g, tasks: updatedTasks }
-        const newProgress = calculateProgress(updatedGoal)
-        const newStatus: GoalStatus = newProgress === 100 ? "completed" : "active"
-        return { ...updatedGoal, progress: newProgress, status: newStatus }
-      })
-    )
+          t.id === taskId ? { ...t, completed: !t.completed } : t,
+        );
+        const updatedGoal = { ...g, tasks: updatedTasks };
+        const newProgress = calculateProgress(updatedGoal);
+        const newStatus: GoalStatus =
+          newProgress === 100 ? "completed" : "active";
+        return { ...updatedGoal, progress: newProgress, status: newStatus };
+      }),
+    );
     setSelectedGoal((prev) => {
-      if (!prev || prev.id !== goalId) return prev
+      if (!prev || prev.id !== goalId) return prev;
       const updatedTasks = prev.tasks.map((t) =>
-        t.id === taskId ? { ...t, completed: !t.completed } : t
-      )
-      const updatedGoal = { ...prev, tasks: updatedTasks }
-      const newProgress = calculateProgress(updatedGoal)
-      const newStatus: GoalStatus = newProgress === 100 ? "completed" : "active"
-      return { ...updatedGoal, progress: newProgress, status: newStatus }
-    })
-  }
+        t.id === taskId ? { ...t, completed: !t.completed } : t,
+      );
+      const updatedGoal = { ...prev, tasks: updatedTasks };
+      const newProgress = calculateProgress(updatedGoal);
+      const newStatus: GoalStatus =
+        newProgress === 100 ? "completed" : "active";
+      return { ...updatedGoal, progress: newProgress, status: newStatus };
+    });
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Goals Tracker</h2>
-          <p className="text-muted-foreground">Manage and track your goals progress</p>
-        </div>
+        <PageHeader
+          title="Goals Tracker"
+          description="Manage and track your goals progress"
+        />
         <Button
           onClick={() => {
-            setEditingGoal(null)
-            setDialogOpen(true)
+            setEditingGoal(null);
+            setDialogOpen(true);
           }}
           className="gap-2"
         >
@@ -224,7 +231,10 @@ export function GoalsTracker() {
       </div>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabValue)}>
+        <Tabs
+          value={activeTab}
+          onValueChange={(v) => setActiveTab(v as TabValue)}
+        >
           <TabsList>
             <TabsTrigger value="active">
               Active ({goals.filter((g) => g.status === "active").length})
@@ -264,8 +274,8 @@ export function GoalsTracker() {
           <Button
             variant="link"
             onClick={() => {
-              setEditingGoal(null)
-              setDialogOpen(true)
+              setEditingGoal(null);
+              setDialogOpen(true);
             }}
           >
             Create your first goal
@@ -306,5 +316,5 @@ export function GoalsTracker() {
         onToggleTask={handleToggleTask}
       />
     </div>
-  )
+  );
 }

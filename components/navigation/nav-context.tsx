@@ -1,53 +1,33 @@
-"use client"
+"use client";
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react"
-import { LayoutDashboard, Target, BarChart3, Heart, type LucideIcon } from "lucide-react"
-
-export type NavSection = "dashboard" | "goals" | "performance" | "health"
+import {
+  BarChart3,
+  Heart,
+  LayoutDashboard,
+  Target,
+  Settings,
+  HelpCircle,
+  type LucideIcon,
+} from "lucide-react";
 
 export interface NavItem {
-  id: NavSection
-  label: string
-  icon: LucideIcon
+  label: string;
+  icon: LucideIcon;
+  href: string;
 }
 
-export const navItems: NavItem[] = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { id: "goals", label: "Goals", icon: Target },
-  { id: "performance", label: "Performance", icon: BarChart3 },
-  { id: "health", label: "Health", icon: Heart },
-]
+export const primaryNavItems: NavItem[] = [
+  { label: "Dashboard", icon: LayoutDashboard, href: "/" },
+  { label: "Goals", icon: Target, href: "/goals" },
+  {
+    label: "Performance",
+    icon: BarChart3,
+    href: "/performance",
+  },
+  { label: "Health", icon: Heart, href: "/health" },
+];
 
-interface NavContextType {
-  activeSection: NavSection
-  setActiveSection: (section: NavSection) => void
-  scrollToSection: (section: NavSection) => void
-}
-
-const NavContext = createContext<NavContextType | undefined>(undefined)
-
-export function NavProvider({ children }: { children: ReactNode }) {
-  const [activeSection, setActiveSection] = useState<NavSection>("dashboard")
-
-  const scrollToSection = useCallback((section: NavSection) => {
-    setActiveSection(section)
-    const element = document.getElementById(`section-${section}`)
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "start" })
-    }
-  }, [])
-
-  return (
-    <NavContext.Provider value={{ activeSection, setActiveSection, scrollToSection }}>
-      {children}
-    </NavContext.Provider>
-  )
-}
-
-export function useNav() {
-  const context = useContext(NavContext)
-  if (context === undefined) {
-    throw new Error("useNav must be used within a NavProvider")
-  }
-  return context
-}
+export const secondaryNavItems: NavItem[] = [
+  { label: "Settings", icon: Settings, href: "/settings" },
+  { label: "Help", icon: HelpCircle, href: "/help" },
+];
