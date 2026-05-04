@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -204,6 +205,11 @@ export function ReviewDialog({
           <DialogTitle>
             {review ? "Edit Review" : "Add Performance Review"}
           </DialogTitle>
+          <DialogDescription>
+            {review
+              ? "Update your performance details and reflect on your progress."
+              : "Record your performance, track progress, and note key improvements."}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-5 py-4">

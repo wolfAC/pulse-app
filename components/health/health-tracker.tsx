@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { HealthOverview } from "./health-overview";
-import { HealthLogs } from "./health-logs";
-import { WorkoutsSection } from "./workouts-section";
-import { AddEntryDialog } from "./add-entry-dialog";
-import { Plus, LayoutGrid, ListOrdered, Dumbbell } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LayoutGrid, List, Plus } from "lucide-react";
+import { useState } from "react";
+import { AddEntryDialog } from "./add-entry-dialog";
+import { HealthLogs } from "./health-logs";
+import { HealthOverview } from "./health-overview";
+import { WorkoutsSection } from "./workouts-section";
 
 export function HealthTracker() {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -52,20 +52,24 @@ export function HealthTracker() {
         </Tabs>
 
         {/* View toggle (optional) */}
-        <div className="flex gap-1 border rounded-lg p-1">
+        <div className="flex items-center gap-1 rounded-lg border p-1">
           <Button
             variant={viewMode === "grid" ? "secondary" : "ghost"}
             size="sm"
             onClick={() => setViewMode("grid")}
+            className="gap-1.5"
           >
             <LayoutGrid className="size-4" />
+            <span className="sr-only sm:not-sr-only">Grid</span>
           </Button>
           <Button
             variant={viewMode === "list" ? "secondary" : "ghost"}
             size="sm"
             onClick={() => setViewMode("list")}
+            className="gap-1.5"
           >
-            <ListOrdered className="size-4" />
+            <List className="size-4" />
+            <span className="sr-only sm:not-sr-only">List</span>
           </Button>
         </div>
       </div>

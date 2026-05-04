@@ -284,12 +284,12 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 <label htmlFor="pin" className="text-sm font-medium">
                   6-Digit PIN
                 </label>
-                <div className="flex gap-2 justify-center">
+                <div className="flex justify-center gap-2 max-w-full">
                   {[0, 1, 2, 3, 4, 5].map((index) => (
                     <div
                       key={index}
                       className={cn(
-                        "w-12 h-14 rounded-lg border-2 flex items-center justify-center text-xl font-bold transition-colors",
+                        "flex-1 max-w-12 h-14 rounded-lg border-2 flex items-center justify-center text-lg font-bold",
                         pin.length > index
                           ? "border-primary bg-primary/5"
                           : "border-border bg-secondary/30",
@@ -308,7 +308,8 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                   maxLength={6}
                   value={pin}
                   onChange={(e) => handlePinChange(e.target.value)}
-                  className="sr-only"
+                  // className="sr-only"
+                  className="absolute w-0 h-0 opacity-0"
                   autoFocus
                 />
                 <p className="text-xs text-center text-muted-foreground">

@@ -139,7 +139,7 @@ export function AddEntryDialog({ open, onOpenChange }: AddEntryDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-125">
+      <DialogContent className="max-w-lg sm:max-w-125">
         <DialogHeader>
           <DialogTitle>Add Health Entry</DialogTitle>
           <DialogDescription>
