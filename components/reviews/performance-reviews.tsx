@@ -8,105 +8,31 @@ import { Review, ReviewPeriod } from "@/lib/types/review";
 import { cn } from "@/lib/utils";
 import { LayoutGrid, List, Plus, TrendingUp } from "lucide-react";
 import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addReview,
+  updateReview,
+  deleteReview,
+} from "@/store/slices/performance";
 import { RadialScore } from "./radial-score";
 import { ReviewCard } from "./review-card";
 import { ReviewDialog } from "./review-dialog";
-
-// Sample data
-const sampleReviews: Review[] = [
-  {
-    id: "1",
-    date: "2024-01-15",
-    period: "daily",
-    overallScore: 85,
-    metrics: {
-      productivity: 90,
-      quality: 85,
-      communication: 80,
-      learning: 85,
-    },
-    highlights: [
-      "Completed feature implementation ahead of schedule",
-      "Received positive feedback from stakeholders",
-    ],
-    blockers: ["Waiting on API documentation from backend team"],
-    improvements: ["Could improve code review turnaround time"],
-    notes: "Overall productive day with good focus time.",
-  },
-  {
-    id: "2",
-    date: "2024-01-14",
-    period: "daily",
-    overallScore: 72,
-    metrics: {
-      productivity: 70,
-      quality: 75,
-      communication: 70,
-      learning: 73,
-    },
-    highlights: ["Fixed critical bug in production"],
-    blockers: [
-      "Multiple meeting interruptions",
-      "Unclear requirements for new feature",
-    ],
-    improvements: [
-      "Better time blocking for deep work",
-      "Ask for clarification earlier",
-    ],
-  },
-  {
-    id: "3",
-    date: "2024-01-08",
-    period: "weekly",
-    overallScore: 88,
-    metrics: {
-      productivity: 92,
-      quality: 88,
-      communication: 85,
-      learning: 87,
-    },
-    highlights: [
-      "Shipped 3 major features",
-      "Led successful sprint planning",
-      "Mentored junior developer",
-    ],
-    blockers: [],
-    improvements: ["Documentation could be more thorough"],
-    notes: "Excellent week with strong delivery and team collaboration.",
-  },
-  {
-    id: "4",
-    date: "2024-01-01",
-    period: "monthly",
-    overallScore: 82,
-    metrics: {
-      productivity: 85,
-      quality: 82,
-      communication: 78,
-      learning: 83,
-    },
-    highlights: [
-      "Completed Q4 objectives",
-      "Improved test coverage by 25%",
-      "Launched new dashboard feature",
-    ],
-    blockers: ["Resource constraints mid-month"],
-    improvements: ["Cross-team communication", "Better estimation accuracy"],
-    notes: "Strong month overall with room for improvement in planning.",
-  },
-];
+import { RootState } from "@/store";
 
 type FilterType = "all" | ReviewPeriod;
 
 export function PerformanceReviews() {
-  const [reviews, setReviews] = useState(sampleReviews);
-  const [filter, setFilter] = useState("all");
+  const dispatch = useDispatch();
+  const reviews = useSelector((state: RootState) => state.performance.reviews);
+
+  const [filter, setFilter] = useState<FilterType>("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingReview, setEditingReview] = useState<Review | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   const filteredReviews = reviews
     .filter((r) => filter === "all" || r.period === filter)
+    .slice() // avoid mutating the Redux state array
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const averageScore =
@@ -123,7 +49,9 @@ export function PerformanceReviews() {
     );
     return sorted[0].overallScore - sorted[1].overallScore;
   })();
+
   type ReviewInput = Omit<Review, "id" | "overallScore">;
+
   const handleSave = (reviewData: ReviewInput) => {
     const overallScore = Math.round(
       (reviewData.metrics.productivity +
@@ -134,20 +62,23 @@ export function PerformanceReviews() {
     );
 
     if (editingReview) {
-      setReviews((prev) =>
-        prev.map((r) =>
-          r.id === editingReview.id
-            ? { ...reviewData, id: editingReview.id, overallScore }
-            : r,
-        ),
+      // Update existing review via Redux action
+      dispatch(
+        updateReview({
+          ...reviewData,
+          id: editingReview.id,
+          overallScore,
+        }),
       );
     } else {
-      const newReview = {
-        ...reviewData,
-        id: crypto.randomUUID(),
-        overallScore,
-      };
-      setReviews((prev) => [newReview, ...prev]);
+      // Add new review via Redux action
+      dispatch(
+        addReview({
+          ...reviewData,
+          id: crypto.randomUUID(),
+          overallScore,
+        }),
+      );
     }
 
     setEditingReview(null);
@@ -159,7 +90,8 @@ export function PerformanceReviews() {
   };
 
   const handleDelete = (id: string) => {
-    setReviews((prev) => prev.filter((r) => r.id !== id));
+    // Delete review via Redux action
+    dispatch(deleteReview(id));
   };
 
   return (
@@ -169,7 +101,6 @@ export function PerformanceReviews() {
           title="Performance Reviews"
           description="Track and reflect on your work performance"
         />
-
         <Button
           onClick={() => {
             setEditingReview(null);
@@ -182,7 +113,7 @@ export function PerformanceReviews() {
         </Button>
       </div>
 
-      {/* Stats (now free layout, not inside card) */}
+      {/* Stats */}
       <Card>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 px-6 pb-3">
           <div className="flex items-center gap-3">
@@ -192,7 +123,6 @@ export function PerformanceReviews() {
               <p className="text-sm font-medium">{averageScore}%</p>
             </div>
           </div>
-
           <div className="flex items-center gap-3">
             <TrendingUp
               className={cn(
@@ -212,12 +142,10 @@ export function PerformanceReviews() {
               </p>
             </div>
           </div>
-
           <div>
             <p className="text-xs text-muted-foreground">Total</p>
             <p className="text-sm font-medium">{reviews.length} reviews</p>
           </div>
-
           <div>
             <p className="text-xs text-muted-foreground">This Month</p>
             <p className="text-sm font-medium">
@@ -236,9 +164,10 @@ export function PerformanceReviews() {
           </div>
         </div>
       </Card>
+
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        {/* Tabs */}
-        <Tabs value={filter} onValueChange={setFilter}>
+        {/* Filter Tabs */}
+        <Tabs value={filter} onValueChange={(v) => setFilter(v as FilterType)}>
           <TabsList>
             <TabsTrigger value="all">All ({reviews.length})</TabsTrigger>
             <TabsTrigger value="daily">
@@ -253,6 +182,7 @@ export function PerformanceReviews() {
           </TabsList>
         </Tabs>
 
+        {/* View Mode Toggle */}
         <div className="flex items-center gap-1 rounded-lg border p-1">
           <Button
             variant={viewMode === "grid" ? "secondary" : "ghost"}

@@ -36,56 +36,52 @@ import {
   Zap,
 } from "lucide-react";
 import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { addEntry, addWorkout } from "@/store/slices/health";
 
 interface AddEntryDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-const metricTypes: {
-  type: HealthMetricType;
-  icon: typeof Moon;
-  label: string;
-  unit: string;
-  placeholder: string;
-}[] = [
+const metricTypes = [
   {
-    type: "sleep",
+    type: "sleep" as HealthMetricType,
     icon: Moon,
     label: "Sleep",
     unit: "hours",
     placeholder: "7.5",
   },
   {
-    type: "steps",
+    type: "steps" as HealthMetricType,
     icon: Footprints,
     label: "Steps",
     unit: "steps",
     placeholder: "10000",
   },
   {
-    type: "calories",
+    type: "calories" as HealthMetricType,
     icon: Flame,
     label: "Calories",
     unit: "kcal",
     placeholder: "2000",
   },
   {
-    type: "water",
+    type: "water" as HealthMetricType,
     icon: Droplets,
     label: "Water",
     unit: "L",
     placeholder: "2.5",
   },
   {
-    type: "heart_rate",
+    type: "heart_rate" as HealthMetricType,
     icon: Heart,
     label: "Heart Rate",
     unit: "bpm",
     placeholder: "72",
   },
   {
-    type: "weight",
+    type: "weight" as HealthMetricType,
     icon: Scale,
     label: "Weight",
     unit: "kg",
@@ -93,49 +89,80 @@ const metricTypes: {
   },
 ];
 
-const workoutTypes: {
-  type: WorkoutType;
-  icon: typeof Dumbbell;
-  label: string;
-}[] = [
-  { type: "running", icon: Footprints, label: "Running" },
-  { type: "cycling", icon: Bike, label: "Cycling" },
-  { type: "swimming", icon: Waves, label: "Swimming" },
-  { type: "strength", icon: Dumbbell, label: "Strength" },
-  { type: "yoga", icon: PersonStanding, label: "Yoga" },
-  { type: "hiit", icon: Zap, label: "HIIT" },
+const workoutTypes = [
+  { type: "running" as WorkoutType, icon: Footprints, label: "Running" },
+  { type: "cycling" as WorkoutType, icon: Bike, label: "Cycling" },
+  { type: "swimming" as WorkoutType, icon: Waves, label: "Swimming" },
+  { type: "strength" as WorkoutType, icon: Dumbbell, label: "Strength" },
+  { type: "yoga" as WorkoutType, icon: PersonStanding, label: "Yoga" },
+  { type: "hiit" as WorkoutType, icon: Zap, label: "HIIT" },
 ];
 
+const emptyForm = {
+  value: "",
+  duration: "",
+  calories: "",
+  distance: "",
+  workoutName: "",
+  notes: "",
+};
+
 export function AddEntryDialog({ open, onOpenChange }: AddEntryDialogProps) {
+  const dispatch = useDispatch();
   const [tab, setTab] = useState<"metric" | "workout">("metric");
   const [selectedMetric, setSelectedMetric] =
     useState<HealthMetricType>("steps");
   const [selectedWorkout, setSelectedWorkout] =
     useState<WorkoutType>("running");
-  const [value, setValue] = useState("");
-  const [duration, setDuration] = useState("");
-  const [calories, setCalories] = useState("");
-  const [distance, setDistance] = useState("");
-  const [workoutName, setWorkoutName] = useState("");
-  const [notes, setNotes] = useState("");
+  const [form, setForm] = useState(emptyForm);
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+
+  const set =
+    (key: keyof typeof emptyForm) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+      setForm((f) => ({ ...f, [key]: e.target.value }));
+
+  const reset = () => {
+    setForm(emptyForm);
+    setDate(new Date().toISOString().split("T")[0]);
+  };
+
+  const handleSubmit = () => {
+    if (tab === "metric") {
+      if (!form.value) return;
+      const config = metricTypes.find((m) => m.type === selectedMetric)!;
+      dispatch(
+        addEntry({
+          id: Date.now().toString(),
+          date,
+          type: selectedMetric,
+          value: parseFloat(form.value),
+          unit: config.unit,
+          notes: form.notes || undefined,
+        }),
+      );
+    } else {
+      if (!form.workoutName || !form.duration || !form.calories) return;
+      dispatch(
+        addWorkout({
+          id: Date.now().toString(),
+          date,
+          type: selectedWorkout,
+          name: form.workoutName,
+          duration: parseInt(form.duration),
+          caloriesBurned: parseInt(form.calories),
+          distance: form.distance ? parseFloat(form.distance) : undefined,
+          notes: form.notes || undefined,
+        }),
+      );
+    }
+    reset();
+    onOpenChange(false);
+  };
 
   const selectedMetricConfig = metricTypes.find(
     (m) => m.type === selectedMetric,
   );
-
-  const handleSubmit = () => {
-    // In a real app, this would save to a database
-    onOpenChange(false);
-    // Reset form
-    setValue("");
-    setDuration("");
-    setCalories("");
-    setDistance("");
-    setWorkoutName("");
-    setNotes("");
-    setDate(new Date().toISOString().split("T")[0]);
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -166,7 +193,6 @@ export function AddEntryDialog({ open, onOpenChange }: AddEntryDialogProps) {
                   onChange={(e) => setDate(e.target.value)}
                 />
               </Field>
-
               <Field>
                 <FieldLabel>Metric Type</FieldLabel>
                 <div className="grid grid-cols-3 gap-2">
@@ -193,23 +219,21 @@ export function AddEntryDialog({ open, onOpenChange }: AddEntryDialogProps) {
                   })}
                 </div>
               </Field>
-
               <Field>
                 <FieldLabel>Value ({selectedMetricConfig?.unit})</FieldLabel>
                 <Input
                   type="number"
                   placeholder={selectedMetricConfig?.placeholder}
-                  value={value}
-                  onChange={(e) => setValue(e.target.value)}
+                  value={form.value}
+                  onChange={set("value")}
                 />
               </Field>
-
               <Field>
                 <FieldLabel>Notes (optional)</FieldLabel>
                 <Textarea
                   placeholder="Add any notes..."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
+                  value={form.notes}
+                  onChange={set("notes")}
                   rows={2}
                 />
               </Field>
@@ -227,7 +251,6 @@ export function AddEntryDialog({ open, onOpenChange }: AddEntryDialogProps) {
                     onChange={(e) => setDate(e.target.value)}
                   />
                 </Field>
-
                 <Field>
                   <FieldLabel>Workout Type</FieldLabel>
                   <Select
@@ -250,54 +273,49 @@ export function AddEntryDialog({ open, onOpenChange }: AddEntryDialogProps) {
                   </Select>
                 </Field>
               </div>
-
               <Field>
                 <FieldLabel>Workout Name</FieldLabel>
                 <Input
                   placeholder="e.g. Morning Run"
-                  value={workoutName}
-                  onChange={(e) => setWorkoutName(e.target.value)}
+                  value={form.workoutName}
+                  onChange={set("workoutName")}
                 />
               </Field>
-
               <div className="grid grid-cols-3 gap-4">
                 <Field>
                   <FieldLabel>Duration (min)</FieldLabel>
                   <Input
                     type="number"
                     placeholder="45"
-                    value={duration}
-                    onChange={(e) => setDuration(e.target.value)}
+                    value={form.duration}
+                    onChange={set("duration")}
                   />
                 </Field>
-
                 <Field>
                   <FieldLabel>Calories</FieldLabel>
                   <Input
                     type="number"
                     placeholder="300"
-                    value={calories}
-                    onChange={(e) => setCalories(e.target.value)}
+                    value={form.calories}
+                    onChange={set("calories")}
                   />
                 </Field>
-
                 <Field>
                   <FieldLabel>Distance (km)</FieldLabel>
                   <Input
                     type="number"
                     placeholder="5.0"
-                    value={distance}
-                    onChange={(e) => setDistance(e.target.value)}
+                    value={form.distance}
+                    onChange={set("distance")}
                   />
                 </Field>
               </div>
-
               <Field>
                 <FieldLabel>Notes (optional)</FieldLabel>
                 <Textarea
                   placeholder="How was your workout?"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
+                  value={form.notes}
+                  onChange={set("notes")}
                   rows={2}
                 />
               </Field>
@@ -306,7 +324,13 @@ export function AddEntryDialog({ open, onOpenChange }: AddEntryDialogProps) {
         </Tabs>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button
+            variant="outline"
+            onClick={() => {
+              reset();
+              onOpenChange(false);
+            }}
+          >
             Cancel
           </Button>
           <Button onClick={handleSubmit}>Add Entry</Button>

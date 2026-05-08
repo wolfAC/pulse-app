@@ -23,6 +23,7 @@ import { usePathname } from "next/navigation";
 
 export function AppSidebar() {
   const pathname = usePathname();
+
   return (
     <Sidebar collapsible="icon">
       {/* Header */}
@@ -33,7 +34,9 @@ export function AppSidebar() {
               <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                 <Zap className="size-4" />
               </div>
-              <div className="flex flex-col gap-0.5 leading-none">
+
+              {/* Hide when collapsed */}
+              <div className="flex flex-col gap-0.5 leading-none group-data-[collapsible=icon]:hidden">
                 <span className="font-semibold">Pulse</span>
                 <span className="text-xs text-muted-foreground">Dashboard</span>
               </div>
@@ -47,6 +50,7 @@ export function AppSidebar() {
         {/* Main */}
         <SidebarGroup>
           <SidebarGroupLabel>Main</SidebarGroupLabel>
+
           <SidebarGroupContent>
             <SidebarMenu>
               {primaryNavItems.map((item) => {
@@ -77,6 +81,7 @@ export function AppSidebar() {
         {/* Support */}
         <SidebarGroup>
           <SidebarGroupLabel>Support</SidebarGroupLabel>
+
           <SidebarGroupContent>
             <SidebarMenu>
               {secondaryNavItems.map((item) => (
@@ -93,6 +98,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
       {/* Footer */}
       <SidebarFooter className="border-t border-sidebar-border pt-2">
         <SidebarMenu>
@@ -105,12 +111,15 @@ export function AppSidebar() {
                 />
                 <AvatarFallback>JD</AvatarFallback>
               </Avatar>
-              <div className="flex flex-col gap-0.5 leading-none">
+
+              {/* Hide when collapsed */}
+              <div className="flex flex-col gap-0.5 leading-none group-data-[collapsible=icon]:hidden">
                 <span className="font-medium text-sm">John Doe</span>
                 <span className="text-xs text-muted-foreground">Pro Plan</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
+
           <SidebarMenuItem>
             <SidebarMenuButton
               tooltip="Sign Out"

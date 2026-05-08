@@ -22,42 +22,20 @@ import {
   ListFilter,
   Moon,
   Scale,
+  type LucideIcon,
 } from "lucide-react";
 import { useState } from "react";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/store";
 
-const mockEntries: HealthEntry[] = [
-  {
-    id: "1",
-    date: "2024-01-15",
-    type: "sleep",
-    value: 7.5,
-    unit: "hours",
-    notes: "Slept well",
-  },
-  { id: "2", date: "2024-01-15", type: "steps", value: 8432, unit: "steps" },
-  { id: "3", date: "2024-01-15", type: "calories", value: 1845, unit: "kcal" },
-  { id: "4", date: "2024-01-15", type: "water", value: 2.5, unit: "L" },
-  { id: "5", date: "2024-01-14", type: "sleep", value: 8.0, unit: "hours" },
-  { id: "6", date: "2024-01-14", type: "steps", value: 10200, unit: "steps" },
-  { id: "7", date: "2024-01-14", type: "calories", value: 2050, unit: "kcal" },
-  { id: "8", date: "2024-01-14", type: "water", value: 3.0, unit: "L" },
-  {
-    id: "9",
-    date: "2024-01-13",
-    type: "sleep",
-    value: 6.8,
-    unit: "hours",
-    notes: "Late night",
-  },
-  { id: "10", date: "2024-01-13", type: "steps", value: 7800, unit: "steps" },
-  { id: "11", date: "2024-01-13", type: "heart_rate", value: 72, unit: "bpm" },
-  { id: "12", date: "2024-01-13", type: "weight", value: 75.5, unit: "kg" },
-];
+type MetricConfig = {
+  icon: LucideIcon;
+  color: string;
+  bgColor: string;
+  label: string;
+};
 
-const typeConfig: Record<
-  HealthMetricType,
-  { icon: typeof Moon; color: string; bgColor: string; label: string }
-> = {
+const typeConfig: Record<HealthMetricType, MetricConfig> = {
   sleep: {
     icon: Moon,
     color: "text-indigo-500",
@@ -97,14 +75,13 @@ const typeConfig: Record<
 };
 
 export function HealthLogs() {
+  const entries = useSelector((state: RootState) => state.health.entries);
   const [filter, setFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const entriesPerPage = 8;
 
   const filteredEntries =
-    filter === "all"
-      ? mockEntries
-      : mockEntries.filter((entry) => entry.type === filter);
+    filter === "all" ? entries : entries.filter((e) => e.type === filter);
 
   const totalPages = Math.ceil(filteredEntries.length / entriesPerPage);
   const paginatedEntries = filteredEntries.slice(
@@ -112,19 +89,10 @@ export function HealthLogs() {
     currentPage * entriesPerPage,
   );
 
-  const formatEntryDate = (dateStr: string) => {
-    return formatDate(dateStr, { includeWeekday: true });
-  };
-
-  const formatValue = (entry: HealthEntry) => {
-    if (entry.type === "steps") {
-      return entry.value.toLocaleString();
-    }
-    if (entry.type === "calories") {
-      return entry.value.toLocaleString();
-    }
-    return entry.value;
-  };
+  const formatValue = (entry: HealthEntry) =>
+    entry.type === "steps" || entry.type === "calories"
+      ? entry.value.toLocaleString()
+      : entry.value;
 
   return (
     <Card>
@@ -155,7 +123,6 @@ export function HealthLogs() {
         </Select>
       </CardHeader>
       <CardContent className="p-0">
-        {/* Table Header - Hidden on mobile */}
         <div className="hidden sm:grid sm:grid-cols-[1fr_120px_100px_80px] gap-4 px-6 py-3 border-y border-border bg-muted/30 text-xs font-medium text-muted-foreground uppercase tracking-wide">
           <span>Type</span>
           <span>Date</span>
@@ -163,67 +130,65 @@ export function HealthLogs() {
           <span className="text-right">Unit</span>
         </div>
 
-        {/* Entries List */}
         <div className="divide-y divide-border">
-          {paginatedEntries.map((entry) => {
-            const config = typeConfig[entry.type];
-            const Icon = config.icon;
-
-            return (
-              <div
-                key={entry.id}
-                className="flex flex-col sm:grid sm:grid-cols-[1fr_120px_100px_80px] gap-2 sm:gap-4 px-6 py-4 hover:bg-muted/30 transition-colors"
-              >
-                {/* Type with Icon */}
-                <div className="flex items-center gap-3">
-                  <div
-                    className={cn(
-                      "flex size-8 items-center justify-center rounded-lg",
-                      config.bgColor,
-                    )}
-                  >
-                    <Icon className={cn("size-4", config.color)} />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium">{config.label}</span>
-                    {entry.notes && (
-                      <span className="text-xs text-muted-foreground">
-                        {entry.notes}
+          {paginatedEntries.length === 0 ? (
+            <p className="px-6 py-8 text-center text-sm text-muted-foreground">
+              No entries found
+            </p>
+          ) : (
+            paginatedEntries.map((entry) => {
+              const config = typeConfig[entry.type];
+              const Icon = config.icon;
+              return (
+                <div
+                  key={entry.id}
+                  className="flex flex-col sm:grid sm:grid-cols-[1fr_120px_100px_80px] gap-2 sm:gap-4 px-6 py-4 hover:bg-muted/30 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={cn(
+                        "flex size-8 items-center justify-center rounded-lg",
+                        config.bgColor,
+                      )}
+                    >
+                      <Icon className={cn("size-4", config.color)} />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium">
+                        {config.label}
                       </span>
-                    )}
+                      {entry.notes && (
+                        <span className="text-xs text-muted-foreground">
+                          {entry.notes}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center sm:justify-start pl-11 sm:pl-0">
+                    <span className="text-sm text-muted-foreground">
+                      {formatDate(entry.date, { includeWeekday: true })}
+                    </span>
+                  </div>
+                  <div className="flex items-center sm:justify-end pl-11 sm:pl-0">
+                    <span className="text-sm font-semibold">
+                      {formatValue(entry)}
+                    </span>
+                  </div>
+                  <div className="flex items-center sm:justify-end pl-11 sm:pl-0">
+                    <Badge variant="secondary" className="text-xs font-normal">
+                      {entry.unit}
+                    </Badge>
                   </div>
                 </div>
-
-                {/* Date */}
-                <div className="flex items-center sm:justify-start pl-11 sm:pl-0">
-                  <span className="text-sm text-muted-foreground">
-                    {formatEntryDate(entry.date)}
-                  </span>
-                </div>
-
-                {/* Value */}
-                <div className="flex items-center sm:justify-end pl-11 sm:pl-0">
-                  <span className="text-sm font-semibold">
-                    {formatValue(entry)}
-                  </span>
-                </div>
-
-                {/* Unit */}
-                <div className="flex items-center sm:justify-end pl-11 sm:pl-0">
-                  <Badge variant="secondary" className="text-xs font-normal">
-                    {entry.unit}
-                  </Badge>
-                </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
 
-        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-6 py-4 border-t border-border">
             <span className="text-xs text-muted-foreground">
-              Showing {(currentPage - 1) * entriesPerPage + 1}-
+              Showing {(currentPage - 1) * entriesPerPage + 1}–
               {Math.min(currentPage * entriesPerPage, filteredEntries.length)}{" "}
               of {filteredEntries.length}
             </span>

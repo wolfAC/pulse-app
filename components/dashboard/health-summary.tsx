@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Heart, Moon, Footprints, Flame } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Heart, Moon, Footprints, Flame } from "lucide-react";
 
 const healthMetrics = [
   {
@@ -35,13 +35,15 @@ const healthMetrics = [
     color: "text-chart-3",
     bgColor: "bg-chart-3/10",
   },
-]
+];
 
 export function HealthSummary() {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">Health Summary</CardTitle>
+        <CardTitle className="text-sm font-medium text-muted-foreground">
+          Health Summary
+        </CardTitle>
         <div className="flex size-9 items-center justify-center rounded-lg bg-destructive/10">
           <Heart className="size-5 text-destructive" />
         </div>
@@ -51,12 +53,16 @@ export function HealthSummary() {
           <div key={metric.id} className="space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className={`flex size-8 items-center justify-center rounded-lg ${metric.bgColor}`}>
+                <div
+                  className={`flex size-8 items-center justify-center rounded-lg ${metric.bgColor}`}
+                >
                   <metric.icon className={`size-4 ${metric.color}`} />
                 </div>
                 <div>
                   <p className="text-sm font-medium">{metric.title}</p>
-                  <p className="text-xs text-muted-foreground">{metric.target}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {metric.target}
+                  </p>
                 </div>
               </div>
               <span className="text-lg font-semibold">{metric.value}</span>
@@ -66,5 +72,5 @@ export function HealthSummary() {
         ))}
       </CardContent>
     </Card>
-  )
+  );
 }

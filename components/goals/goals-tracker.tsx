@@ -4,101 +4,20 @@ import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Goal, GoalStatus } from "@/lib/types/goal";
+import { RootState } from "@/store";
+import { addGoal, deleteGoal, updateGoal } from "@/store/slices/goals";
 import { LayoutGrid, List, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { GoalCard } from "./goal-card";
 import { GoalDetailsSheet } from "./goal-details-sheet";
 import { GoalDialog } from "./goal-dialog";
 
-const initialGoals: Goal[] = [
-  {
-    id: "1",
-    title: "Learn TypeScript",
-    description:
-      "Master TypeScript fundamentals and advanced patterns for better code quality.",
-    progress: 65,
-    priority: "high",
-    status: "active",
-    dueDate: "2026-06-15",
-    milestones: [
-      { id: "m1", title: "Complete basics course", completed: true },
-      { id: "m2", title: "Build a project", completed: false },
-      { id: "m3", title: "Learn advanced types", completed: false },
-    ],
-    tasks: [
-      { id: "t1", title: "Read documentation", completed: true },
-      { id: "t2", title: "Practice generics", completed: true },
-      { id: "t3", title: "Build type-safe API", completed: false },
-    ],
-    createdAt: "2026-01-15",
-  },
-  {
-    id: "2",
-    title: "Run a Marathon",
-    description: "Train and complete a full marathon by the end of the year.",
-    progress: 40,
-    priority: "medium",
-    status: "active",
-    dueDate: "2026-11-20",
-    milestones: [
-      { id: "m4", title: "Run 10K", completed: true },
-      { id: "m5", title: "Run half marathon", completed: false },
-      { id: "m6", title: "Complete marathon", completed: false },
-    ],
-    tasks: [
-      { id: "t4", title: "Create training schedule", completed: true },
-      { id: "t5", title: "Buy running gear", completed: true },
-      { id: "t6", title: "Join running club", completed: false },
-    ],
-    createdAt: "2026-02-01",
-  },
-  {
-    id: "3",
-    title: "Read 24 Books",
-    description: "Read 2 books per month across various genres and topics.",
-    progress: 25,
-    priority: "low",
-    status: "active",
-    dueDate: "2026-12-31",
-    milestones: [
-      { id: "m7", title: "Read 6 books", completed: true },
-      { id: "m8", title: "Read 12 books", completed: false },
-      { id: "m9", title: "Read 24 books", completed: false },
-    ],
-    tasks: [
-      { id: "t7", title: "Create reading list", completed: true },
-      { id: "t8", title: "Set daily reading time", completed: true },
-      { id: "t9", title: "Join book club", completed: false },
-    ],
-    createdAt: "2026-01-01",
-  },
-  {
-    id: "4",
-    title: "Complete React Course",
-    description:
-      "Finished the advanced React patterns course with certification.",
-    progress: 100,
-    priority: "high",
-    status: "completed",
-    dueDate: "2026-03-01",
-    milestones: [
-      { id: "m10", title: "Complete fundamentals", completed: true },
-      { id: "m11", title: "Build portfolio project", completed: true },
-      { id: "m12", title: "Pass certification", completed: true },
-    ],
-    tasks: [
-      { id: "t10", title: "Watch all videos", completed: true },
-      { id: "t11", title: "Complete exercises", completed: true },
-      { id: "t12", title: "Submit final project", completed: true },
-    ],
-    createdAt: "2025-12-01",
-  },
-];
-
 type TabValue = "active" | "completed" | "all";
 
 export function GoalsTracker() {
-  const [goals, setGoals] = useState<Goal[]>(initialGoals);
+  const dispatch = useDispatch();
+  const goals = useSelector((state: RootState) => state.goals.goals);
   const [activeTab, setActiveTab] = useState<TabValue>("active");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -111,11 +30,22 @@ export function GoalsTracker() {
     return goals.filter((goal) => goal.status === activeTab);
   }, [goals, activeTab]);
 
+  const calculateProgress = (goal: Goal): number => {
+    const totalItems = goal.milestones.length + goal.tasks.length;
+    if (totalItems === 0) return goal.progress;
+    const completedItems =
+      goal.milestones.filter((m) => m.completed).length +
+      goal.tasks.filter((t) => t.completed).length;
+    return Math.round((completedItems / totalItems) * 100);
+  };
+
   const handleSaveGoal = (goalData: Partial<Goal>) => {
     if (goalData.id) {
-      setGoals((prev) =>
-        prev.map((g) => (g.id === goalData.id ? { ...g, ...goalData } : g)),
-      );
+      // Edit existing — merge with the current goal from Redux
+      const existing = goals.find((g) => g.id === goalData.id);
+      if (existing) {
+        dispatch(updateGoal({ ...existing, ...goalData } as Goal));
+      }
     } else {
       const newGoal: Goal = {
         id: Date.now().toString(),
@@ -129,7 +59,7 @@ export function GoalsTracker() {
         tasks: [],
         createdAt: new Date().toISOString().split("T")[0],
       };
-      setGoals((prev) => [newGoal, ...prev]);
+      dispatch(addGoal(newGoal));
     }
     setEditingGoal(null);
   };
@@ -140,75 +70,54 @@ export function GoalsTracker() {
   };
 
   const handleDeleteGoal = (id: string) => {
-    setGoals((prev) => prev.filter((g) => g.id !== id));
+    dispatch(deleteGoal(id));
   };
-
   const handleSelectGoal = (goal: Goal) => {
     setSelectedGoal(goal);
     setDetailsOpen(true);
   };
 
-  const calculateProgress = (goal: Goal): number => {
-    const totalItems = goal.milestones.length + goal.tasks.length;
-    if (totalItems === 0) return goal.progress;
-    const completedItems =
-      goal.milestones.filter((m) => m.completed).length +
-      goal.tasks.filter((t) => t.completed).length;
-    return Math.round((completedItems / totalItems) * 100);
-  };
-
   const handleToggleMilestone = (goalId: string, milestoneId: string) => {
-    setGoals((prev) =>
-      prev.map((g) => {
-        if (g.id !== goalId) return g;
-        const updatedMilestones = g.milestones.map((m) =>
-          m.id === milestoneId ? { ...m, completed: !m.completed } : m,
-        );
-        const updatedGoal = { ...g, milestones: updatedMilestones };
-        const newProgress = calculateProgress(updatedGoal);
-        const newStatus: GoalStatus =
-          newProgress === 100 ? "completed" : "active";
-        return { ...updatedGoal, progress: newProgress, status: newStatus };
-      }),
+    const goal = goals.find((g) => g.id === goalId);
+    if (!goal) return;
+
+    const updatedMilestones = goal.milestones.map((m) =>
+      m.id === milestoneId ? { ...m, completed: !m.completed } : m,
     );
-    setSelectedGoal((prev) => {
-      if (!prev || prev.id !== goalId) return prev;
-      const updatedMilestones = prev.milestones.map((m) =>
-        m.id === milestoneId ? { ...m, completed: !m.completed } : m,
-      );
-      const updatedGoal = { ...prev, milestones: updatedMilestones };
-      const newProgress = calculateProgress(updatedGoal);
-      const newStatus: GoalStatus =
-        newProgress === 100 ? "completed" : "active";
-      return { ...updatedGoal, progress: newProgress, status: newStatus };
-    });
+    const updatedGoal = { ...goal, milestones: updatedMilestones };
+    const newProgress = calculateProgress(updatedGoal);
+    const newStatus: GoalStatus = newProgress === 100 ? "completed" : "active";
+    const finalGoal = {
+      ...updatedGoal,
+      progress: newProgress,
+      status: newStatus,
+    };
+
+    dispatch(updateGoal(finalGoal));
+
+    // Keep the details sheet in sync
+    setSelectedGoal((prev) => (prev?.id === goalId ? finalGoal : prev));
   };
 
   const handleToggleTask = (goalId: string, taskId: string) => {
-    setGoals((prev) =>
-      prev.map((g) => {
-        if (g.id !== goalId) return g;
-        const updatedTasks = g.tasks.map((t) =>
-          t.id === taskId ? { ...t, completed: !t.completed } : t,
-        );
-        const updatedGoal = { ...g, tasks: updatedTasks };
-        const newProgress = calculateProgress(updatedGoal);
-        const newStatus: GoalStatus =
-          newProgress === 100 ? "completed" : "active";
-        return { ...updatedGoal, progress: newProgress, status: newStatus };
-      }),
+    const goal = goals.find((g) => g.id === goalId);
+    if (!goal) return;
+
+    const updatedTasks = goal.tasks.map((t) =>
+      t.id === taskId ? { ...t, completed: !t.completed } : t,
     );
-    setSelectedGoal((prev) => {
-      if (!prev || prev.id !== goalId) return prev;
-      const updatedTasks = prev.tasks.map((t) =>
-        t.id === taskId ? { ...t, completed: !t.completed } : t,
-      );
-      const updatedGoal = { ...prev, tasks: updatedTasks };
-      const newProgress = calculateProgress(updatedGoal);
-      const newStatus: GoalStatus =
-        newProgress === 100 ? "completed" : "active";
-      return { ...updatedGoal, progress: newProgress, status: newStatus };
-    });
+    const updatedGoal = { ...goal, tasks: updatedTasks };
+    const newProgress = calculateProgress(updatedGoal);
+    const newStatus: GoalStatus = newProgress === 100 ? "completed" : "active";
+    const finalGoal = {
+      ...updatedGoal,
+      progress: newProgress,
+      status: newStatus,
+    };
+
+    dispatch(updateGoal(finalGoal));
+
+    setSelectedGoal((prev) => (prev?.id === goalId ? finalGoal : prev));
   };
 
   return (
