@@ -1,13 +1,22 @@
 // store.ts
 import { configureStore } from "@reduxjs/toolkit";
-import { persistStore, persistReducer } from "redux-persist";
+import {
+  persistStore,
+  persistReducer,
+  FLUSH,
+  REHYDRATE,
+  PAUSE,
+  PERSIST,
+  PURGE,
+  REGISTER,
+} from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import rootReducer, { AppState } from "./rootReducer";
 
 const persistConfig = {
   key: "pulse-app",
   storage,
-  blacklist: ["ui"],
+  whitelist: ["app", "goals", "health", "performance", "finance"],
 };
 
 const persistedReducer = persistReducer<AppState>(persistConfig, rootReducer);
@@ -15,7 +24,13 @@ const persistedReducer = persistReducer<AppState>(persistConfig, rootReducer);
 export const store = configureStore({
   reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({ serializableCheck: false }),
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+      },
+    }),
+
+  devTools: process.env.NODE_ENV !== "production",
 });
 
 export const persistor = persistStore(store);

@@ -122,6 +122,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
     } else {
+      localStorage.setItem("user_pin", pin);
       onComplete();
     }
   };
