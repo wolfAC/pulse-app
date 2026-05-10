@@ -31,7 +31,7 @@ import {
   TrendingUp,
   Calendar,
 } from "lucide-react";
-import { Review, periodLabels, metricLabels } from "@/lib/types/review";
+import { Review, periodLabels, metricLabels } from "@/lib/types/performance";
 import { RadialScore } from "./radial-score";
 import { cn, formatDate } from "@/lib/utils";
 

@@ -1,65 +1,48 @@
-// slices/app.js
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-import { createSlice } from "@reduxjs/toolkit";
+export type Theme = "light" | "dark" | "system";
 
-const initialState = {
-  onboardingCompleted: false,
+interface AppState {
+  theme: Theme;
+  sidebarOpen: boolean;
+  appLocked: boolean;
+  currency: string;
+}
 
-  authenticated: false,
-
+const initialState: AppState = {
   theme: "dark",
-
   sidebarOpen: true,
-
   appLocked: false,
+  currency: "INR",
 };
 
 const appSlice = createSlice({
   name: "app",
-
   initialState,
-
   reducers: {
-    completeOnboarding: (state) => {
-      state.onboardingCompleted = true;
-    },
-
-    resetOnboarding: (state) => {
-      state.onboardingCompleted = false;
-    },
-
-    setAuthenticated: (state, action) => {
-      state.authenticated = action.payload;
-    },
-
-    lockApp: (state) => {
-      state.appLocked = true;
-      state.authenticated = false;
-    },
-
-    unlockApp: (state) => {
-      state.appLocked = false;
-      state.authenticated = true;
-    },
-
-    setTheme: (state, action) => {
+    setTheme(state, action: PayloadAction<Theme>) {
       state.theme = action.payload;
     },
 
-    toggleSidebar: (state) => {
+    toggleSidebar(state) {
       state.sidebarOpen = !state.sidebarOpen;
+    },
+
+    setSidebarOpen(state, action: PayloadAction<boolean>) {
+      state.sidebarOpen = action.payload;
+    },
+
+    lockApp(state) {
+      state.appLocked = true;
+    },
+
+    unlockApp(state) {
+      state.appLocked = false;
     },
   },
 });
 
-export const {
-  completeOnboarding,
-  resetOnboarding,
-  setAuthenticated,
-  lockApp,
-  unlockApp,
-  setTheme,
-  toggleSidebar,
-} = appSlice.actions;
+export const { setTheme, toggleSidebar, setSidebarOpen, lockApp, unlockApp } =
+  appSlice.actions;
 
 export default appSlice.reducer;

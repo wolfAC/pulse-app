@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useDispatch } from "react-redux";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,9 +11,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 import {
-  Sparkles,
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+import { cn } from "@/lib/utils";
+import { registerUser, login } from "@/store/slices/auth";
+import {
   User,
   Target,
   CheckCircle2,
@@ -24,6 +30,7 @@ import {
   BookOpen,
   Dumbbell,
   Moon,
+  Mail,
 } from "lucide-react";
 
 interface OnboardingFlowProps {
@@ -91,17 +98,30 @@ const steps = [
 ];
 
 export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
+  const dispatch = useDispatch();
+
   const [currentStep, setCurrentStep] = useState(1);
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [pin, setPin] = useState("");
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
-  const [errors, setErrors] = useState<{ name?: string; pin?: string }>({});
+  const [errors, setErrors] = useState<{
+    name?: string;
+    email?: string;
+    pin?: string;
+  }>({});
 
   const validateStep2 = () => {
-    const newErrors: { name?: string; pin?: string } = {};
+    const newErrors: { name?: string; email?: string; pin?: string } = {};
 
     if (!name.trim()) {
       newErrors.name = "Please enter your name";
+    }
+
+    if (!email.trim()) {
+      newErrors.email = "Please enter your email";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      newErrors.email = "Please enter a valid email address";
     }
 
     if (pin.length !== 6) {
@@ -115,22 +135,27 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   };
 
   const handleNext = () => {
-    if (currentStep === 2 && !validateStep2()) {
-      return;
-    }
+    if (currentStep === 2 && !validateStep2()) return;
 
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
-    } else {
-      localStorage.setItem("user_pin", pin);
-      onComplete();
+      return;
     }
+    // Register user and open session
+    dispatch(
+      registerUser({
+        email: email.trim().toLowerCase(),
+        name: name.trim(),
+        pin,
+        selectedGoals,
+      }),
+    );
+    dispatch(login({ email: email.trim().toLowerCase() }));
+    onComplete();
   };
 
   const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
+    if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
   const toggleGoal = (goalId: string) => {
@@ -144,9 +169,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const handlePinChange = (value: string) => {
     const numericValue = value.replace(/\D/g, "").slice(0, 6);
     setPin(numericValue);
-    if (errors.pin) {
-      setErrors((prev) => ({ ...prev, pin: undefined }));
-    }
+    if (errors.pin) setErrors((prev) => ({ ...prev, pin: undefined }));
   };
 
   return (
@@ -204,11 +227,11 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
           <>
             <CardHeader className="text-center space-y-4 pb-2">
               <div className="mx-auto w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-                <Sparkles className="h-10 w-10 text-primary" />
+                <Zap className="h-10 w-10 text-primary" />
               </div>
               <div className="space-y-2">
                 <CardTitle className="text-2xl sm:text-3xl">
-                  Welcome to Your Dashboard
+                  Welcome to Pulse
                 </CardTitle>
                 <CardDescription className="text-base">
                   Track your productivity, health, and goals all in one place.
@@ -217,26 +240,24 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
               </div>
             </CardHeader>
             <CardContent className="pt-6">
-              <div className="space-y-4">
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="flex flex-col items-center p-3 rounded-lg bg-secondary/50">
-                    <Target className="h-6 w-6 text-primary mb-2" />
-                    <span className="text-xs text-center text-muted-foreground">
-                      Set Goals
-                    </span>
-                  </div>
-                  <div className="flex flex-col items-center p-3 rounded-lg bg-secondary/50">
-                    <TrendingUp className="h-6 w-6 text-accent mb-2" />
-                    <span className="text-xs text-center text-muted-foreground">
-                      Track Progress
-                    </span>
-                  </div>
-                  <div className="flex flex-col items-center p-3 rounded-lg bg-secondary/50">
-                    <Heart className="h-6 w-6 text-rose-500 mb-2" />
-                    <span className="text-xs text-center text-muted-foreground">
-                      Stay Healthy
-                    </span>
-                  </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="flex flex-col items-center p-3 rounded-lg bg-secondary/50">
+                  <Target className="h-6 w-6 text-primary mb-2" />
+                  <span className="text-xs text-center text-muted-foreground">
+                    Set Goals
+                  </span>
+                </div>
+                <div className="flex flex-col items-center p-3 rounded-lg bg-secondary/50">
+                  <TrendingUp className="h-6 w-6 text-accent mb-2" />
+                  <span className="text-xs text-center text-muted-foreground">
+                    Track Progress
+                  </span>
+                </div>
+                <div className="flex flex-col items-center p-3 rounded-lg bg-secondary/50">
+                  <Heart className="h-6 w-6 text-rose-500 mb-2" />
+                  <span className="text-xs text-center text-muted-foreground">
+                    Stay Healthy
+                  </span>
                 </div>
               </div>
             </CardContent>
@@ -257,7 +278,8 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 </CardDescription>
               </div>
             </CardHeader>
-            <CardContent className="pt-6 space-y-6">
+            <CardContent className="pt-6 space-y-5">
+              {/* Name */}
               <div className="space-y-2">
                 <label htmlFor="name" className="text-sm font-medium">
                   Your Name
@@ -281,70 +303,77 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                   <p className="text-sm text-destructive">{errors.name}</p>
                 )}
               </div>
+
+              {/* Email */}
               <div className="space-y-2">
-                <label htmlFor="pin" className="text-sm font-medium">
+                <label
+                  htmlFor="email"
+                  className="text-sm font-medium flex items-center gap-1.5"
+                >
+                  Email Address
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  inputMode="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (errors.email)
+                      setErrors((prev) => ({ ...prev, email: undefined }));
+                  }}
+                  className={cn(
+                    "h-12 text-base",
+                    errors.email &&
+                      "border-destructive focus-visible:ring-destructive",
+                  )}
+                />
+                {errors.email && (
+                  <p className="text-sm text-destructive">{errors.email}</p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Used to identify your account — no emails are sent.
+                </p>
+              </div>
+
+              {/* PIN */}
+              <div className="space-y-2">
+                <label
+                  htmlFor="pin"
+                  className="text-sm font-medium flex items-center gap-1.5"
+                >
                   6-Digit PIN
                 </label>
-                <div className="flex justify-center gap-2 max-w-full">
-                  {[0, 1, 2, 3, 4, 5].map((index) => (
-                    <div
-                      key={index}
-                      className={cn(
-                        "flex-1 max-w-12 h-14 rounded-lg border-2 flex items-center justify-center text-lg font-bold",
-                        pin.length > index
-                          ? "border-primary bg-primary/5"
-                          : "border-border bg-secondary/30",
-                        errors.pin && "border-destructive",
-                      )}
-                    >
-                      {pin[index] ? "•" : ""}
-                    </div>
-                  ))}
+                <div className="flex">
+                  <InputOTP
+                    id="pin"
+                    maxLength={6}
+                    value={pin}
+                    onChange={handlePinChange}
+                    autoFocus
+                  >
+                    <InputOTPGroup>
+                      {[0, 1, 2, 3, 4, 5].map((index) => (
+                        <InputOTPSlot
+                          key={index}
+                          index={index}
+                          className={cn(
+                            "h-12 w-16 text-lg font-bold",
+                            errors.pin &&
+                              "border-destructive aria-invalid:border-destructive",
+                          )}
+                        />
+                      ))}
+                    </InputOTPGroup>
+                  </InputOTP>
                 </div>
-                <Input
-                  id="pin"
-                  type="tel"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  maxLength={6}
-                  value={pin}
-                  onChange={(e) => handlePinChange(e.target.value)}
-                  // className="sr-only"
-                  className="absolute w-0 h-0 opacity-0"
-                  autoFocus
-                />
-                <p className="text-xs text-center text-muted-foreground">
+                {errors.pin && (
+                  <p className="text-sm text-destructive">{errors.pin}</p>
+                )}
+                <p className="text-xs text-muted-foreground">
                   Enter 6 digits for your secure PIN
                 </p>
-                {errors.pin && (
-                  <p className="text-sm text-center text-destructive">
-                    {errors.pin}
-                  </p>
-                )}
-                {/* Visual number pad for mobile */}
-                <div className="grid grid-cols-3 gap-2 pt-4">
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, null, 0, "del"].map((num, i) => (
-                    <Button
-                      key={i}
-                      type="button"
-                      variant="secondary"
-                      className={cn(
-                        "h-14 text-xl font-medium",
-                        num === null && "invisible",
-                      )}
-                      onClick={() => {
-                        if (num === "del") {
-                          handlePinChange(pin.slice(0, -1));
-                        } else if (num !== null && pin.length < 6) {
-                          handlePinChange(pin + num);
-                        }
-                      }}
-                      disabled={num === null}
-                    >
-                      {num === "del" ? <ArrowLeft className="h-5 w-5" /> : num}
-                    </Button>
-                  ))}
-                </div>
               </div>
             </CardContent>
           </>
@@ -373,7 +402,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                     type="button"
                     onClick={() => toggleGoal(goal.id)}
                     className={cn(
-                      "p-4 rounded-xl border-2 text-left transition-all duration-200",
+                      "relative p-4 rounded-xl border-2 text-left transition-all duration-200",
                       selectedGoals.includes(goal.id)
                         ? "border-primary bg-primary/5 ring-2 ring-primary/20"
                         : "border-border hover:border-primary/50 hover:bg-secondary/50",
@@ -418,7 +447,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
               <div className="space-y-2">
                 <CardTitle className="text-2xl">You&apos;re All Set!</CardTitle>
                 <CardDescription className="text-base">
-                  Welcome aboard, {name || "friend"}! Your dashboard is ready.
+                  Welcome, {name || "friend"}! Your Pulse dashboard is ready.
                 </CardDescription>
               </div>
             </CardHeader>
@@ -429,6 +458,10 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                   <div className="flex items-center gap-3">
                     <User className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm">{name || "User"}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm ">{email}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Target className="h-4 w-4 text-muted-foreground" />
@@ -464,7 +497,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
           </>
         )}
 
-        {/* Navigation Buttons */}
+        {/* Navigation */}
         <CardContent className="pt-2 pb-6">
           <div className="flex gap-3">
             {currentStep > 1 && (

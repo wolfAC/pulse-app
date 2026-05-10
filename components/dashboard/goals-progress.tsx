@@ -4,33 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Target, CheckCircle2 } from "lucide-react";
-
-const goals = [
-  {
-    id: 1,
-    title: "Complete Project Alpha",
-    progress: 85,
-    target: "100%",
-    dueDate: "May 15",
-    status: "on-track",
-  },
-  {
-    id: 2,
-    title: "Learn TypeScript",
-    progress: 62,
-    target: "100%",
-    dueDate: "Jun 1",
-    status: "in-progress",
-  },
-  {
-    id: 3,
-    title: "Read 12 Books",
-    progress: 42,
-    target: "5/12 books",
-    dueDate: "Dec 31",
-    status: "behind",
-  },
-];
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
+import { useMemo } from "react";
 
 const statusColors = {
   "on-track": "bg-accent/20 text-accent",
@@ -45,6 +21,14 @@ const statusLabels = {
 };
 
 export function GoalsProgress() {
+  const currentEmail = useSelector(
+    (state: RootState) => state.auth.currentEmail,
+  );
+  const allGoals = useSelector((state: RootState) => state.goals.goals ?? []);
+  const goals = useMemo(
+    () => allGoals.filter((g) => g.userEmail === currentEmail),
+    [allGoals, currentEmail],
+  );
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">

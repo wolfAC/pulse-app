@@ -3,6 +3,7 @@
 import {
   BarChart3,
   Heart,
+  PiggyBank,
   LayoutDashboard,
   Target,
   Settings,
@@ -25,6 +26,7 @@ export const primaryNavItems: NavItem[] = [
     href: "/performance",
   },
   { label: "Health", icon: Heart, href: "/health" },
+  { label: "Budgets", href: "/budgets", icon: PiggyBank },
 ];
 
 export const secondaryNavItems: NavItem[] = [

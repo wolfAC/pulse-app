@@ -4,6 +4,7 @@ import type { Goal, GoalStatus } from "@/lib/types/goal";
 const initialGoals: Goal[] = [
   {
     id: "1",
+    userEmail: "wolf8132609@gmail.com",
     title: "Learn TypeScript",
     description:
       "Master TypeScript fundamentals and advanced patterns for better code quality.",
@@ -25,6 +26,7 @@ const initialGoals: Goal[] = [
   },
   {
     id: "2",
+    userEmail: "wolf8132609@gmail.com",
     title: "Run a Marathon",
     description: "Train and complete a full marathon by the end of the year.",
     progress: 40,
@@ -45,6 +47,7 @@ const initialGoals: Goal[] = [
   },
   {
     id: "3",
+    userEmail: "wolf8132609@gmail.com",
     title: "Read 24 Books",
     description: "Read 2 books per month across various genres and topics.",
     progress: 25,
@@ -65,6 +68,7 @@ const initialGoals: Goal[] = [
   },
   {
     id: "4",
+    userEmail: "wolf8132609@gmail.com",
     title: "Complete React Course",
     description:
       "Finished the advanced React patterns course with certification.",

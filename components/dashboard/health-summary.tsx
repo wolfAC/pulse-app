@@ -2,7 +2,10 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { RootState } from "@/store";
 import { Heart, Moon, Footprints, Flame } from "lucide-react";
+import { useMemo } from "react";
+import { useSelector } from "react-redux";
 
 const healthMetrics = [
   {
@@ -38,6 +41,59 @@ const healthMetrics = [
 ];
 
 export function HealthSummary() {
+  const currentEmail = useSelector(
+    (state: RootState) => state.auth.currentEmail,
+  );
+  const allEntries = useSelector(
+    (state: RootState) => state.health.entries ?? [],
+  );
+  const entries = useMemo(
+    () => allEntries.filter((e) => e.userEmail === currentEmail),
+    [allEntries, currentEmail],
+  );
+
+  const latestDate = entries[0]?.date;
+  const latestEntries = entries.filter((e) => e.date === latestDate);
+
+  const get = (type: string) => latestEntries.find((e) => e.type === type);
+
+  const sleep = get("sleep");
+  const steps = get("steps");
+  const calories = get("calories");
+
+  const healthMetrics = [
+    {
+      id: 1,
+      title: "Sleep",
+      value: sleep ? `${sleep.value}h` : "—",
+      target: "8h goal",
+      progress: sleep ? Math.min(100, (sleep.value / 8) * 100) : 0,
+      icon: Moon,
+      color: "text-chart-1",
+      bgColor: "bg-chart-1/10",
+    },
+    {
+      id: 2,
+      title: "Steps",
+      value: steps ? steps.value.toLocaleString() : "—",
+      target: "10k goal",
+      progress: steps ? Math.min(100, (steps.value / 10000) * 100) : 0,
+      icon: Footprints,
+      color: "text-chart-2",
+      bgColor: "bg-chart-2/10",
+    },
+    {
+      id: 3,
+      title: "Calories",
+      value: calories ? calories.value.toLocaleString() : "—",
+      target: "2,200 goal",
+      progress: calories ? Math.min(100, (calories.value / 2200) * 100) : 0,
+      icon: Flame,
+      color: "text-chart-3",
+      bgColor: "bg-chart-3/10",
+    },
+  ];
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">

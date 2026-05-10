@@ -17,12 +17,40 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { RootState } from "@/store";
+import { logout } from "@/store/slices/auth";
 import { LogOut, Zap } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const dispatch = useDispatch();
+  const router = useRouter();
+
+  const currentEmail = useSelector(
+    (state: RootState) => state.auth.currentEmail,
+  );
+
+  const user = useSelector((state: RootState) =>
+    currentEmail ? state.auth.users[currentEmail] : null,
+  );
+
+  // Initials from name for avatar fallback
+  const initials = user?.name
+    ? user.name
+        .split(" ")
+        .map((w) => w[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+    : "?";
+
+  const handleSignOut = () => {
+    dispatch(logout());
+    router.replace("/login");
+  };
 
   return (
     <Sidebar collapsible="icon">
@@ -109,13 +137,17 @@ export function AppSidebar() {
                   src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face"
                   alt="User"
                 />
-                <AvatarFallback>JD</AvatarFallback>
+                <AvatarFallback>{initials}</AvatarFallback>
               </Avatar>
 
               {/* Hide when collapsed */}
               <div className="flex flex-col gap-0.5 leading-none group-data-[collapsible=icon]:hidden">
-                <span className="font-medium text-sm">John Doe</span>
-                <span className="text-xs text-muted-foreground">Pro Plan</span>
+                <span className="font-medium text-sm truncate">
+                  {user?.name ?? "—"}
+                </span>
+                <span className="text-xs text-muted-foreground truncate">
+                  {user?.email ?? "—"}
+                </span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -124,6 +156,7 @@ export function AppSidebar() {
             <SidebarMenuButton
               tooltip="Sign Out"
               className="text-muted-foreground hover:text-destructive"
+              onClick={handleSignOut}
             >
               <LogOut className="size-4" />
               <span>Sign Out</span>

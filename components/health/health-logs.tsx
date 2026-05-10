@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import type { HealthEntry, HealthMetricType } from "@/lib/types/health";
 import { cn, formatDate } from "@/lib/utils";
+import type { RootState } from "@/store/index";
 import {
   ChevronLeft,
   ChevronRight,
@@ -24,9 +25,12 @@ import {
   Scale,
   type LucideIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useSelector } from "react-redux";
-import type { RootState } from "@/store";
+
+interface HealthLogsProps {
+  userEmail: string | null;
+}
 
 type MetricConfig = {
   icon: LucideIcon;
@@ -74,14 +78,26 @@ const typeConfig: Record<HealthMetricType, MetricConfig> = {
   },
 };
 
-export function HealthLogs() {
-  const entries = useSelector((state: RootState) => state.health.entries);
+export function HealthLogs({ userEmail }: HealthLogsProps) {
+  const allEntries = useSelector(
+    (state: RootState) => state.health.entries ?? [],
+  );
+
+  // Scope to current user
+  const entries = useMemo(
+    () => allEntries.filter((e) => e.userEmail === userEmail),
+    [allEntries, userEmail],
+  );
+
   const [filter, setFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const entriesPerPage = 8;
 
-  const filteredEntries =
-    filter === "all" ? entries : entries.filter((e) => e.type === filter);
+  const filteredEntries = useMemo(
+    () =>
+      filter === "all" ? entries : entries.filter((e) => e.type === filter),
+    [entries, filter],
+  );
 
   const totalPages = Math.ceil(filteredEntries.length / entriesPerPage);
   const paginatedEntries = filteredEntries.slice(
@@ -122,6 +138,7 @@ export function HealthLogs() {
           </SelectContent>
         </Select>
       </CardHeader>
+
       <CardContent className="p-0">
         <div className="hidden sm:grid sm:grid-cols-[1fr_120px_100px_80px] gap-4 px-6 py-3 border-y border-border bg-muted/30 text-xs font-medium text-muted-foreground uppercase tracking-wide">
           <span>Type</span>

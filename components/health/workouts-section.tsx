@@ -5,18 +5,31 @@ import { Badge } from "@/components/ui/badge";
 import { WorkoutCard } from "./workout-card";
 import { Dumbbell, TrendingUp, Flame, Clock } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import type { RootState } from "@/store";
+import type { RootState } from "@/store/index";
 import { deleteWorkout } from "@/store/slices/health";
+import { useMemo } from "react";
+
+interface WorkoutsSectionProps {
+  userEmail: string | null;
+}
 
 function formatDuration(minutes: number) {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
-  return `${hours}h ${mins}m`;
+  return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
 }
 
-export function WorkoutsSection() {
+export function WorkoutsSection({ userEmail }: WorkoutsSectionProps) {
   const dispatch = useDispatch();
-  const workouts = useSelector((state: RootState) => state.health.workouts);
+  const allWorkouts = useSelector(
+    (state: RootState) => state.health.workouts ?? [],
+  );
+
+  // Scope to current user only
+  const workouts = useMemo(
+    () => allWorkouts.filter((w) => w.userEmail === userEmail),
+    [allWorkouts, userEmail],
+  );
 
   const totalCalories = workouts.reduce((sum, w) => sum + w.caloriesBurned, 0);
   const totalDuration = workouts.reduce((sum, w) => sum + w.duration, 0);
@@ -36,9 +49,7 @@ export function WorkoutsSection() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{workouts.length}</p>
-                <p className="text-xs text-muted-foreground">
-                  Workouts this week
-                </p>
+                <p className="text-xs text-muted-foreground">Total workouts</p>
               </div>
             </div>
           </CardContent>
@@ -84,7 +95,7 @@ export function WorkoutsSection() {
             Recent Workouts
           </CardTitle>
           <Badge variant="secondary" className="text-xs">
-            {workouts.length} workouts
+            {workouts.length} workout{workouts.length !== 1 ? "s" : ""}
           </Badge>
         </CardHeader>
         <CardContent>

@@ -1,104 +1,36 @@
+import {
+  Budget,
+  BudgetsState,
+  SavingsGoal,
+  Transaction,
+} from "@/lib/types/budgets";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-export type TransactionType = "income" | "expense";
-
-export interface Transaction {
-  id: string;
-
-  type: TransactionType;
-
-  amount: number;
-
-  category: string;
-
-  date: string;
-
-  note?: string;
-
-  account?: string;
-
-  bankName?: string;
-
-  counterParty?: string;
-
-  tags?: string[];
-
-  source?: "manual" | "gpay-pdf";
-
-  createdAt: number;
-}
-
-export interface Budget {
-  id: string;
-
-  category: string;
-
-  limit: number;
-
-  month: string;
-}
-
-export interface SavingsGoal {
-  id: string;
-
-  title: string;
-
-  targetAmount: number;
-
-  currentAmount: number;
-
-  deadline?: string;
-
-  createdAt: number;
-}
-
-interface FinanceState {
-  transactions: Transaction[];
-
-  budgets: Budget[];
-
-  savingsGoals: SavingsGoal[];
-}
-
-const initialState: FinanceState = {
+const initialState: BudgetsState = {
   transactions: [
     {
       id: "tx1",
-
+      userEmail: "wolf8132609@gmail.com",
       type: "expense",
-
       amount: 250,
-
       category: "Food",
-
       date: "2026-05-01",
-
       note: "Lunch",
-
       counterParty: "Swiggy",
-
       tags: ["food"],
-
       source: "manual",
-
       createdAt: Date.now(),
     },
 
     {
       id: "tx2",
-
+      userEmail: "wolf8132609@gmail.com",
       type: "income",
-
       amount: 50000,
-
       category: "Salary",
-
       date: "2026-05-01",
-
       note: "Monthly salary",
-
       source: "manual",
-
       createdAt: Date.now(),
     },
   ],
@@ -106,21 +38,17 @@ const initialState: FinanceState = {
   budgets: [
     {
       id: "budget1",
-
+      userEmail: "wolf8132609@gmail.com",
       category: "Food",
-
       limit: 5000,
-
       month: "2026-05",
     },
 
     {
       id: "budget2",
-
+      userEmail: "wolf8132609@gmail.com",
       category: "Transport",
-
       limit: 3000,
-
       month: "2026-05",
     },
   ],
@@ -128,22 +56,18 @@ const initialState: FinanceState = {
   savingsGoals: [
     {
       id: "save1",
-
+      userEmail: "wolf8132609@gmail.com",
       title: "Emergency Fund",
-
       targetAmount: 100000,
-
       currentAmount: 25000,
-
       deadline: "2026-12-31",
-
-      createdAt: Date.now(),
+      createdAt: +new Date(),
     },
   ],
 };
 
-const financeSlice = createSlice({
-  name: "finance",
+const budgetsSlice = createSlice({
+  name: "budgets",
 
   initialState,
 
@@ -228,7 +152,7 @@ const financeSlice = createSlice({
       );
     },
 
-    clearFinanceData: (state) => {
+    clearBudgetsData: (state) => {
       state.transactions = [];
       state.budgets = [];
       state.savingsGoals = [];
@@ -251,7 +175,7 @@ export const {
   updateSavingsGoal,
   deleteSavingsGoal,
 
-  clearFinanceData,
-} = financeSlice.actions;
+  clearBudgetsData,
+} = budgetsSlice.actions;
 
-export default financeSlice.reducer;
+export default budgetsSlice.reducer;

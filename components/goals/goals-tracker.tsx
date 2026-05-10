@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Goal, GoalStatus } from "@/lib/types/goal";
-import { RootState } from "@/store";
+import { RootState } from "@/store/index";
 import { addGoal, deleteGoal, updateGoal } from "@/store/slices/goals";
 import { LayoutGrid, List, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -17,7 +17,17 @@ type TabValue = "active" | "completed" | "all";
 
 export function GoalsTracker() {
   const dispatch = useDispatch();
-  const goals = useSelector((state: RootState) => state.goals.goals);
+
+  const currentEmail = useSelector(
+    (state: RootState) => state.auth.currentEmail,
+  );
+  const allGoals = useSelector((state: RootState) => state.goals.goals ?? []);
+
+  const goals = useMemo(
+    () => allGoals.filter((g) => g.userEmail === currentEmail),
+    [allGoals, currentEmail],
+  );
+
   const [activeTab, setActiveTab] = useState<TabValue>("active");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -41,7 +51,6 @@ export function GoalsTracker() {
 
   const handleSaveGoal = (goalData: Partial<Goal>) => {
     if (goalData.id) {
-      // Edit existing — merge with the current goal from Redux
       const existing = goals.find((g) => g.id === goalData.id);
       if (existing) {
         dispatch(updateGoal({ ...existing, ...goalData } as Goal));
@@ -49,6 +58,7 @@ export function GoalsTracker() {
     } else {
       const newGoal: Goal = {
         id: Date.now().toString(),
+        userEmail: currentEmail!,
         title: goalData.title || "",
         description: goalData.description || "",
         progress: 0,
@@ -72,6 +82,7 @@ export function GoalsTracker() {
   const handleDeleteGoal = (id: string) => {
     dispatch(deleteGoal(id));
   };
+
   const handleSelectGoal = (goal: Goal) => {
     setSelectedGoal(goal);
     setDetailsOpen(true);
@@ -80,7 +91,6 @@ export function GoalsTracker() {
   const handleToggleMilestone = (goalId: string, milestoneId: string) => {
     const goal = goals.find((g) => g.id === goalId);
     if (!goal) return;
-
     const updatedMilestones = goal.milestones.map((m) =>
       m.id === milestoneId ? { ...m, completed: !m.completed } : m,
     );
@@ -92,17 +102,13 @@ export function GoalsTracker() {
       progress: newProgress,
       status: newStatus,
     };
-
     dispatch(updateGoal(finalGoal));
-
-    // Keep the details sheet in sync
     setSelectedGoal((prev) => (prev?.id === goalId ? finalGoal : prev));
   };
 
   const handleToggleTask = (goalId: string, taskId: string) => {
     const goal = goals.find((g) => g.id === goalId);
     if (!goal) return;
-
     const updatedTasks = goal.tasks.map((t) =>
       t.id === taskId ? { ...t, completed: !t.completed } : t,
     );
@@ -114,9 +120,7 @@ export function GoalsTracker() {
       progress: newProgress,
       status: newStatus,
     };
-
     dispatch(updateGoal(finalGoal));
-
     setSelectedGoal((prev) => (prev?.id === goalId ? finalGoal : prev));
   };
 

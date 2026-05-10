@@ -13,8 +13,13 @@ import {
   Tooltip,
 } from "recharts";
 import { useSelector } from "react-redux";
-import type { RootState } from "@/store";
+import type { RootState } from "@/store/index";
 import type { HealthEntry } from "@/lib/types/health";
+
+interface HealthOverviewProps {
+  viewMode?: string;
+  userEmail: string | null;
+}
 
 function getLatestByType(entries: HealthEntry[], type: string) {
   return entries
@@ -24,19 +29,14 @@ function getLatestByType(entries: HealthEntry[], type: string) {
 
 function buildWeeklyData(entries: HealthEntry[]) {
   const sorted = [...entries].sort((a, b) => a.date.localeCompare(b.date));
-
   const uniqueDates = [...new Set(sorted.map((e) => e.date))].slice(-7);
-
   return uniqueDates.map((date) => {
     const day = new Date(date).toLocaleDateString("en-US", {
       weekday: "short",
     });
-
     const dayEntries = entries.filter((e) => e.date === date);
-
     const get = (type: string) =>
       dayEntries.find((e) => e.type === type)?.value ?? 0;
-
     return {
       day,
       sleep: get("sleep"),
@@ -78,8 +78,19 @@ const METRICS = [
   },
 ] as const;
 
-export function HealthOverview({ viewMode = "grid" }) {
-  const entries = useSelector((state: RootState) => state.health.entries);
+export function HealthOverview({
+  viewMode = "grid",
+  userEmail,
+}: HealthOverviewProps) {
+  const allEntries = useSelector(
+    (state: RootState) => state.health.entries ?? [],
+  );
+
+  // Filter to current user only
+  const entries = useMemo(
+    () => allEntries.filter((e) => e.userEmail === userEmail),
+    [allEntries, userEmail],
+  );
 
   const [selectedMetric, setSelectedMetric] = useState<
     (typeof METRICS)[number]
@@ -158,7 +169,6 @@ export function HealthOverview({ viewMode = "grid" }) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-base font-medium">Weekly Trends</CardTitle>
-
           <div className="flex items-center gap-1.5 text-xs text-emerald-500">
             <TrendingUp className="size-4" />
             <span className="font-medium">Overall improving</span>
@@ -192,19 +202,13 @@ export function HealthOverview({ viewMode = "grid" }) {
                     />
                   </linearGradient>
                 </defs>
-
                 <XAxis
                   dataKey="day"
                   axisLine={false}
                   tickLine={false}
-                  tick={{
-                    fontSize: 12,
-                    fill: "hsl(var(--muted-foreground))",
-                  }}
+                  tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
                 />
-
                 <YAxis hide />
-
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "hsl(var(--card))",
@@ -218,7 +222,6 @@ export function HealthOverview({ viewMode = "grid" }) {
                     selectedMetric.label,
                   ]}
                 />
-
                 <Area
                   type="monotone"
                   dataKey={selectedMetric.key}
@@ -235,7 +238,6 @@ export function HealthOverview({ viewMode = "grid" }) {
           <div className="mt-4 flex flex-wrap items-center justify-center gap-3 border-t border-border pt-4">
             {METRICS.map((metric) => {
               const active = selectedMetric.key === metric.key;
-
               return (
                 <button
                   key={metric.key}
@@ -251,7 +253,6 @@ export function HealthOverview({ viewMode = "grid" }) {
                     className="size-3 rounded-full"
                     style={{ backgroundColor: metric.color }}
                   />
-
                   <span>{metric.label}</span>
                 </button>
               );

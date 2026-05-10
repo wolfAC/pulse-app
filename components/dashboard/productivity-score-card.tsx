@@ -3,11 +3,31 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, Zap } from "lucide-react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
+import { useMemo } from "react";
 
 export function ProductivityScoreCard() {
-  const score = 87;
-  const trend = +12;
-  const trendPositive = trend > 0;
+  const currentEmail = useSelector(
+    (state: RootState) => state.auth.currentEmail,
+  );
+  const allReviews = useSelector(
+    (state: RootState) => state.performance.reviews ?? [],
+  );
+  const reviews = useMemo(
+    () => allReviews.filter((r) => r.userEmail === currentEmail),
+    [allReviews, currentEmail],
+  );
+
+  const latest = reviews[0];
+  const previous = reviews[1];
+  const score = latest?.overallScore ?? 0;
+  const trend = previous
+    ? Math.round(
+        ((score - previous.overallScore) / previous.overallScore) * 100,
+      )
+    : 0;
+  const trendPositive = trend >= 0;
 
   return (
     <Card className="relative overflow-hidden">
@@ -39,7 +59,7 @@ export function ProductivityScoreCard() {
           <span className="text-xs text-muted-foreground">vs last week</span>
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
-          You&apos;re performing better than 85% of users
+          {latest?.notes ?? "No notes available."}
         </p>
       </CardContent>
     </Card>

@@ -1,16 +1,18 @@
 import { combineReducers } from "@reduxjs/toolkit";
+import appReducer from "./slices/app";
+import authReducer from "./slices/auth";
+import financeReducer from "./slices/budgets";
 import goalsReducer from "./slices/goals";
 import healthReducer from "./slices/health";
 import performanceReducer from "./slices/performance";
-import financeReducer from "./slices/finance";
-import appReducer from "./slices/app";
 
 const combinedReducer = combineReducers({
+  auth: authReducer,
   app: appReducer,
   goals: goalsReducer,
   health: healthReducer,
   performance: performanceReducer,
-  finance: financeReducer,
+  budgets: financeReducer,
 });
 
 export type AppState = ReturnType<typeof combinedReducer>;

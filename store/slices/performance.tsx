@@ -1,10 +1,11 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Review } from "@/lib/types/review";
+import { Review } from "@/lib/types/performance";
 
 const sampleReviews: Review[] = [
   {
     id: "1",
-    date: "2024-01-15",
+    userEmail: "wolf8132609@gmail.com",
+    date: "2026-05-15",
     period: "daily",
     overallScore: 85,
     metrics: {
@@ -23,7 +24,8 @@ const sampleReviews: Review[] = [
   },
   {
     id: "2",
-    date: "2024-01-14",
+    userEmail: "wolf8132609@gmail.com",
+    date: "2026-05-14",
     period: "daily",
     overallScore: 72,
     metrics: {
@@ -44,7 +46,8 @@ const sampleReviews: Review[] = [
   },
   {
     id: "3",
-    date: "2024-01-08",
+    userEmail: "wolf8132609@gmail.com",
+    date: "2026-05-08",
     period: "weekly",
     overallScore: 88,
     metrics: {
@@ -64,7 +67,8 @@ const sampleReviews: Review[] = [
   },
   {
     id: "4",
-    date: "2024-01-01",
+    userEmail: "wolf8132609@gmail.com",
+    date: "2026-05-01",
     period: "monthly",
     overallScore: 82,
     metrics: {

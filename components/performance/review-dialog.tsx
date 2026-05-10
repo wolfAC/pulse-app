@@ -20,7 +20,7 @@ import {
   ReviewPeriod,
   ReviewMetrics,
   metricLabels,
-} from "@/lib/types/review";
+} from "@/lib/types/performance";
 import { Zap, Award, MessageSquare, BookOpen, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 

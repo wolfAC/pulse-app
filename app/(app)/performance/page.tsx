@@ -1,5 +1,5 @@
-import { PerformanceReviews } from "@/components/reviews/performance-reviews";
+import { PerformanceTracker } from "@/components/performance/performance-tracker";
 
 export default function Page() {
-  return <PerformanceReviews />;
+  return <PerformanceTracker />;
 }

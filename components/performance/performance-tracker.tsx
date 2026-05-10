@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Review, ReviewPeriod } from "@/lib/types/review";
+import { Review, ReviewPeriod } from "@/lib/types/performance";
 import { cn } from "@/lib/utils";
 import { LayoutGrid, List, Plus, TrendingUp } from "lucide-react";
 import { useState } from "react";
@@ -21,7 +21,7 @@ import { RootState } from "@/store";
 
 type FilterType = "all" | ReviewPeriod;
 
-export function PerformanceReviews() {
+export function PerformanceTracker() {
   const dispatch = useDispatch();
   const reviews = useSelector((state: RootState) => state.performance.reviews);
 

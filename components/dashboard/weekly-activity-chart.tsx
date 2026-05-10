@@ -18,18 +18,36 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-
-const data = [
-  { name: "Mon", productivity: 65, focus: 45 },
-  { name: "Tue", productivity: 72, focus: 58 },
-  { name: "Wed", productivity: 85, focus: 70 },
-  { name: "Thu", productivity: 78, focus: 62 },
-  { name: "Fri", productivity: 92, focus: 85 },
-  { name: "Sat", productivity: 55, focus: 40 },
-  { name: "Sun", productivity: 48, focus: 35 },
-];
+import { useSelector } from "react-redux";
+import { useMemo } from "react";
+import { RootState } from "@/store";
 
 export function WeeklyActivityChart() {
+  const currentEmail = useSelector(
+    (state: RootState) => state.auth.currentEmail,
+  );
+  const allWorkouts = useSelector(
+    (state: RootState) => state.health.workouts ?? [],
+  );
+  const workouts = useMemo(
+    () => allWorkouts.filter((w) => w.userEmail === currentEmail),
+    [allWorkouts, currentEmail],
+  );
+
+  // Build last-7-days chart data from workouts
+  const last7 = [...workouts]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 7)
+    .reverse();
+
+  const totalHours = last7.reduce((sum, w) => sum + w.duration, 0) / 60;
+
+  const data = last7.map((w) => ({
+    name: new Date(w.date).toLocaleDateString("en-US", { weekday: "short" }),
+    productivity: w.caloriesBurned ?? 0,
+    focus: w.duration ?? 0,
+  }));
+
   return (
     <Card className="col-span-full lg:col-span-2">
       <CardHeader className="flex flex-row items-start justify-between pb-2">

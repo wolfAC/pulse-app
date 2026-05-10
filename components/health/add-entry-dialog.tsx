@@ -22,6 +22,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import type { HealthMetricType, WorkoutType } from "@/lib/types/health";
 import { cn } from "@/lib/utils";
+import { RootState } from "@/store/index";
+import { addEntry, addWorkout } from "@/store/slices/health";
 import {
   Bike,
   Droplets,
@@ -36,8 +38,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useState } from "react";
-import { useDispatch } from "react-redux";
-import { addEntry, addWorkout } from "@/store/slices/health";
+import { useDispatch, useSelector } from "react-redux";
 
 interface AddEntryDialogProps {
   open: boolean;
@@ -109,6 +110,12 @@ const emptyForm = {
 
 export function AddEntryDialog({ open, onOpenChange }: AddEntryDialogProps) {
   const dispatch = useDispatch();
+
+  // Get the logged-in user's email to stamp on entries
+  const currentEmail = useSelector(
+    (state: RootState) => state.auth.currentEmail,
+  );
+
   const [tab, setTab] = useState<"metric" | "workout">("metric");
   const [selectedMetric, setSelectedMetric] =
     useState<HealthMetricType>("steps");
@@ -128,12 +135,15 @@ export function AddEntryDialog({ open, onOpenChange }: AddEntryDialogProps) {
   };
 
   const handleSubmit = () => {
+    if (!currentEmail) return; // no session, shouldn't happen
+
     if (tab === "metric") {
       if (!form.value) return;
       const config = metricTypes.find((m) => m.type === selectedMetric)!;
       dispatch(
         addEntry({
           id: Date.now().toString(),
+          userEmail: currentEmail,
           date,
           type: selectedMetric,
           value: parseFloat(form.value),
@@ -146,6 +156,7 @@ export function AddEntryDialog({ open, onOpenChange }: AddEntryDialogProps) {
       dispatch(
         addWorkout({
           id: Date.now().toString(),
+          userEmail: currentEmail,
           date,
           type: selectedWorkout,
           name: form.workoutName,

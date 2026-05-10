@@ -1,9 +1,11 @@
-import { PageHeader } from "@/components/ui/page-header";
 import { GoalsProgress } from "@/components/dashboard/goals-progress";
 import { HealthSummary } from "@/components/dashboard/health-summary";
 import { ProductivityScoreCard } from "@/components/dashboard/productivity-score-card";
 import { RecentActivityFeed } from "@/components/dashboard/recent-activity-feed";
 import { WeeklyActivityChart } from "@/components/dashboard/weekly-activity-chart";
+import { PageHeader } from "@/components/ui/page-header";
+import { FinanceScoreCard } from "./finance-score-card";
+import { SpendingTrendChart } from "./spending-trend-chart";
 
 export function Dashboard() {
   return (
@@ -28,8 +30,12 @@ export function Dashboard() {
         {/* Weekly Activity Chart - Takes full width on mobile, 2 columns on lg */}
         <WeeklyActivityChart />
 
+        <FinanceScoreCard />
+
+        <SpendingTrendChart />
+
         {/* Recent Activity Feed - Takes 1 column */}
-        <RecentActivityFeed />
+        {/* <RecentActivityFeed /> */}
       </div>
     </>
   );

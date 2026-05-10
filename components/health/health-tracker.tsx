@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RootState } from "@/store/index";
 import { LayoutGrid, List, Plus } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 import { AddEntryDialog } from "./add-entry-dialog";
 import { HealthLogs } from "./health-logs";
 import { HealthOverview } from "./health-overview";
@@ -16,6 +18,62 @@ export function HealthTracker() {
   const [activeTab, setActiveTab] = useState("overview");
   const [viewMode, setViewMode] = useState("grid");
 
+  const currentEmail = useSelector(
+    (state: RootState) => state.auth.currentEmail,
+  );
+  const allEntries = useSelector(
+    (state: RootState) => state.health.entries ?? [],
+  );
+  const allWorkouts = useSelector(
+    (state: RootState) => state.health.workouts ?? [],
+  );
+
+  // Scope to current user
+  const entries = useMemo(
+    () => allEntries.filter((e) => e.userEmail === currentEmail),
+    [allEntries, currentEmail],
+  );
+  const workouts = useMemo(
+    () => allWorkouts.filter((w) => w.userEmail === currentEmail),
+    [allWorkouts, currentEmail],
+  );
+
+  // Derived stats
+  const stats = useMemo(() => {
+    const getLatest = (type: string) =>
+      entries
+        .filter((e) => e.type === type)
+        .sort((a, b) => b.date.localeCompare(a.date))[0];
+
+    const avgSteps = (() => {
+      const stepEntries = entries.filter((e) => e.type === "steps");
+      if (!stepEntries.length) return "—";
+      const avg = Math.round(
+        stepEntries.reduce((s, e) => s + e.value, 0) / stepEntries.length,
+      );
+      return avg.toLocaleString();
+    })();
+
+    const latestCalories = getLatest("calories");
+    const latestSleep = getLatest("sleep");
+
+    const now = new Date();
+    const workoutsThisWeek = workouts.filter((w) => {
+      const d = new Date(w.date);
+      const diff = (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24);
+      return diff <= 7;
+    }).length;
+
+    return {
+      avgSteps,
+      calories: latestCalories
+        ? `${latestCalories.value.toLocaleString()} kcal`
+        : "—",
+      workouts: `${workoutsThisWeek} this week`,
+      sleep: latestSleep ? `${latestSleep.value} hrs` : "—",
+    };
+  }, [entries, workouts]);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -24,7 +82,6 @@ export function HealthTracker() {
           title="Health Tracker"
           description="Monitor your daily health metrics and workouts"
         />
-
         <Button onClick={() => setDialogOpen(true)} className="gap-2">
           <Plus className="h-4 w-4" />
           Add Entry
@@ -34,10 +91,10 @@ export function HealthTracker() {
       {/* Stats */}
       <Card>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 px-6 pb-3">
-          <Stat label="Avg Steps" value="8,200" />
-          <Stat label="Calories" value="2,100 kcal" />
-          <Stat label="Workouts" value="4 this week" />
-          <Stat label="Sleep" value="7.2 hrs" />
+          <Stat label="Avg Steps" value={stats.avgSteps} />
+          <Stat label="Calories" value={stats.calories} />
+          <Stat label="Workouts" value={stats.workouts} />
+          <Stat label="Sleep" value={stats.sleep} />
         </div>
       </Card>
 
@@ -51,7 +108,6 @@ export function HealthTracker() {
           </TabsList>
         </Tabs>
 
-        {/* View toggle (optional) */}
         <div className="flex items-center gap-1 rounded-lg border p-1">
           <Button
             variant={viewMode === "grid" ? "secondary" : "ghost"}
@@ -74,11 +130,11 @@ export function HealthTracker() {
         </div>
       </div>
 
-      {/* Content */}
-
-      {activeTab === "overview" && <HealthOverview viewMode={viewMode} />}
-      {activeTab === "logs" && <HealthLogs />}
-      {activeTab === "workouts" && <WorkoutsSection />}
+      {activeTab === "overview" && (
+        <HealthOverview viewMode={viewMode} userEmail={currentEmail} />
+      )}
+      {activeTab === "logs" && <HealthLogs userEmail={currentEmail} />}
+      {activeTab === "workouts" && <WorkoutsSection userEmail={currentEmail} />}
 
       <AddEntryDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </div>
