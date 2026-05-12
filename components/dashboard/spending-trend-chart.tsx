@@ -33,7 +33,7 @@ export function SpendingTrendChart() {
     (state: RootState) => state.auth.currentEmail,
   );
   const allTransactions = useSelector(
-    (state: RootState) => state.budgets.transactions ?? [],
+    (state: RootState) => state.finance.transactions ?? [],
   );
 
   const { data, totalIncome, totalExpenses } = useMemo(() => {

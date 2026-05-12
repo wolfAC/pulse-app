@@ -18,9 +18,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { categories } from "@/lib/types/budgets";
+import { categories } from "@/lib/types/finance";
 import type { RootState } from "@/store/index";
-import { addTransaction, type TransactionType } from "@/store/slices/budgets";
+import { addTransaction, type TransactionType } from "@/store/slices/finance";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";

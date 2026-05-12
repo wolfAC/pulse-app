@@ -1,7 +1,7 @@
 import { combineReducers } from "@reduxjs/toolkit";
 import appReducer from "./slices/app";
 import authReducer from "./slices/auth";
-import financeReducer from "./slices/budgets";
+import financeReducer from "./slices/finance";
 import goalsReducer from "./slices/goals";
 import healthReducer from "./slices/health";
 import performanceReducer from "./slices/performance";
@@ -12,7 +12,7 @@ const combinedReducer = combineReducers({
   goals: goalsReducer,
   health: healthReducer,
   performance: performanceReducer,
-  budgets: financeReducer,
+  finance: financeReducer,
 });
 
 export type AppState = ReturnType<typeof combinedReducer>;

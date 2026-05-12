@@ -10,12 +10,12 @@ import { useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { BudgetDialog } from "./budget-dialog";
 import { TransactionDialog } from "./transactions-dialog";
-import { BudgetsOverview } from "./budgets-overview";
-import { TransactionsSection } from "./budget-transaction";
-import { SavingsSection } from "./buget-savings";
-import BudgetAnalytics from "./budgets-analytics";
+import { BudgetsOverview } from "./finance-overview";
+import { TransactionsSection } from "./finance-transaction";
+import { SavingsSection } from "./finance-savings";
+import BudgetAnalytics from "./finance-analytics";
 
-export function BudgetTracker() {
+export function FinanceTracker() {
   const [activeTab, setActiveTab] = useState("overview");
   const [viewMode, setViewMode] = useState("grid");
 
@@ -27,11 +27,11 @@ export function BudgetTracker() {
     (state: RootState) => state.auth.currentEmail,
   );
   const allTransactions = useSelector(
-    (state: RootState) => state.budgets.transactions,
+    (state: RootState) => state.finance.transactions,
   );
-  const allBudgets = useSelector((state: RootState) => state.budgets.budgets);
+  const allBudgets = useSelector((state: RootState) => state.finance.budgets);
   const allGoals = useSelector(
-    (state: RootState) => state.budgets.savingsGoals,
+    (state: RootState) => state.finance.savingsGoals,
   );
 
   const currentMonth = new Date().toISOString().slice(0, 7);
@@ -107,7 +107,7 @@ export function BudgetTracker() {
       {/* ------------------------------------------------------------------ */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <PageHeader
-          title="Budgets"
+          title="Finance"
           description="Manage your budgets, transactions and savings"
         />
         <Button onClick={handleAdd} className="gap-2">

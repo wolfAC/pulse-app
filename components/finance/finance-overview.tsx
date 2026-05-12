@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { RootState } from "@/store/index";
-import { deleteBudget } from "@/store/slices/budgets";
+import { deleteBudget } from "@/store/slices/finance";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -37,9 +37,9 @@ export function BudgetsOverview({
   onAddBudget,
 }: BudgetsOverviewProps) {
   const dispatch = useDispatch();
-  const allBudgets = useSelector((state: RootState) => state.budgets.budgets);
+  const allBudgets = useSelector((state: RootState) => state.finance.budgets);
   const allTransactions = useSelector(
-    (state: RootState) => state.budgets.transactions,
+    (state: RootState) => state.finance.transactions,
   );
 
   const currentMonth = new Date().toISOString().slice(0, 7);

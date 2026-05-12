@@ -11,7 +11,7 @@ export function FinanceScoreCard() {
     (state: RootState) => state.auth.currentEmail,
   );
   const allTransactions = useSelector(
-    (state: RootState) => state.budgets.transactions ?? [],
+    (state: RootState) => state.finance.transactions ?? [],
   );
 
   const currentMonth = new Date().toISOString().slice(0, 7);

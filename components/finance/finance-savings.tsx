@@ -11,12 +11,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { RootState } from "@/store/index";
-import { deleteSavingsGoal, updateSavingsGoal } from "@/store/slices/budgets";
+import { deleteSavingsGoal, updateSavingsGoal } from "@/store/slices/finance";
 import { cn } from "@/lib/utils";
 import { Pencil, Plus, Target, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { ICON_MAP, SavingsGoalDialog } from "./saving-enty-dialog";
+import { ICON_MAP, SavingsGoalDialog } from "./saving-dialog";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-IN", {
@@ -40,7 +40,7 @@ interface SavingsSectionProps {
 export function SavingsSection({ viewMode, userEmail }: SavingsSectionProps) {
   const dispatch = useDispatch();
   const allGoals = useSelector(
-    (state: RootState) => state.budgets.savingsGoals,
+    (state: RootState) => state.finance.savingsGoals,
   );
 
   const [dialogOpen, setDialogOpen] = useState(false);

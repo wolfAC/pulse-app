@@ -1,6 +1,6 @@
 "use client";
 
-import { Transaction } from "@/lib/types/budgets";
+import { Transaction } from "@/lib/types/finance";
 import { useMemo } from "react";
 import {
   Bar,

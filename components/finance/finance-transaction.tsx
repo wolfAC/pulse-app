@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RootState } from "@/store/index";
-import { deleteTransaction } from "@/store/slices/budgets";
+import { deleteTransaction } from "@/store/slices/finance";
 import { cn } from "@/lib/utils";
 import {
   ArrowDownRight,
@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { TransactionType } from "@/lib/types/budgets";
+import { TransactionType } from "@/lib/types/finance";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-IN", {
@@ -58,7 +58,7 @@ export function TransactionsSection({
 }: TransactionsSectionProps) {
   const dispatch = useDispatch();
   const allTransactions = useSelector(
-    (state: RootState) => state.budgets.transactions,
+    (state: RootState) => state.finance.transactions,
   );
 
   const [search, setSearch] = useState("");

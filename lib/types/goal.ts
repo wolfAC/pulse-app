@@ -26,3 +26,7 @@ export interface Goal {
   tasks: Task[];
   createdAt: string;
 }
+
+export interface GoalsState {
+  goals: Goal[];
+}

@@ -1,8 +1,8 @@
 "use client";
 
-import { CategoryPieChart } from "@/components/budgets/charts/category-pie-chart";
-import { OverviewChart } from "@/components/budgets/charts/overview-chart";
-import { SpendingTrendChart } from "@/components/budgets/charts/spending-trend-chart";
+import { CategoryPieChart } from "@/components/finance/charts/category-pie-chart";
+import { OverviewChart } from "@/components/finance/charts/overview-chart";
+import { SpendingTrendChart } from "@/components/finance/charts/spending-trend-chart";
 import {
   Card,
   CardContent,
@@ -25,9 +25,9 @@ export default function BudgetAnalytics() {
   const currentEmail = useSelector(
     (state: RootState) => state.auth.currentEmail,
   );
-  const currency = useSelector((state: RootState) => state.app.currency);
+
   const allTransactions = useSelector(
-    (state: RootState) => state.budgets.transactions ?? [],
+    (state: RootState) => state.finance.transactions ?? [],
   );
 
   // Filter to logged-in user

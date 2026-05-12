@@ -26,7 +26,7 @@ export const primaryNavItems: NavItem[] = [
     href: "/performance",
   },
   { label: "Health", icon: Heart, href: "/health" },
-  { label: "Budgets", href: "/budgets", icon: PiggyBank },
+  { label: "Finance", href: "/finance", icon: PiggyBank },
 ];
 
 export const secondaryNavItems: NavItem[] = [

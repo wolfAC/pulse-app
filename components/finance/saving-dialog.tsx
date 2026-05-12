@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { RootState } from "@/store/index";
-import { addSavingsGoal, updateSavingsGoal } from "@/store/slices/budgets";
+import { addSavingsGoal, updateSavingsGoal } from "@/store/slices/finance";
 import {
   Car,
   Gift,
@@ -90,7 +90,7 @@ export function SavingsGoalDialog({
     (state: RootState) => state.auth.currentEmail,
   );
   const savingsGoals = useSelector(
-    (state: RootState) => state.budgets.savingsGoals,
+    (state: RootState) => state.finance.savingsGoals,
   );
 
   const editingGoal = editingGoalId

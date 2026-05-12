@@ -3,70 +3,21 @@ import {
   BudgetsState,
   SavingsGoal,
   Transaction,
-} from "@/lib/types/budgets";
+} from "@/lib/types/finance";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  sampleTransactions,
+  sampleBudgets,
+  sampleSavingsGoals,
+} from "@/lib/samples";
 
 const initialState: BudgetsState = {
-  transactions: [
-    {
-      id: "tx1",
-      userEmail: "wolf8132609@gmail.com",
-      type: "expense",
-      amount: 250,
-      category: "Food",
-      date: "2026-05-01",
-      note: "Lunch",
-      counterParty: "Swiggy",
-      tags: ["food"],
-      source: "manual",
-      createdAt: Date.now(),
-    },
-
-    {
-      id: "tx2",
-      userEmail: "wolf8132609@gmail.com",
-      type: "income",
-      amount: 50000,
-      category: "Salary",
-      date: "2026-05-01",
-      note: "Monthly salary",
-      source: "manual",
-      createdAt: Date.now(),
-    },
-  ],
-
-  budgets: [
-    {
-      id: "budget1",
-      userEmail: "wolf8132609@gmail.com",
-      category: "Food",
-      limit: 5000,
-      month: "2026-05",
-    },
-
-    {
-      id: "budget2",
-      userEmail: "wolf8132609@gmail.com",
-      category: "Transport",
-      limit: 3000,
-      month: "2026-05",
-    },
-  ],
-
-  savingsGoals: [
-    {
-      id: "save1",
-      userEmail: "wolf8132609@gmail.com",
-      title: "Emergency Fund",
-      targetAmount: 100000,
-      currentAmount: 25000,
-      deadline: "2026-12-31",
-      createdAt: +new Date(),
-    },
-  ],
+  transactions: sampleTransactions,
+  budgets: sampleBudgets,
+  savingsGoals: sampleSavingsGoals,
 };
 
-const budgetsSlice = createSlice({
+const financeSlice = createSlice({
   name: "budgets",
 
   initialState,
@@ -176,6 +127,6 @@ export const {
   deleteSavingsGoal,
 
   clearBudgetsData,
-} = budgetsSlice.actions;
+} = financeSlice.actions;
 
-export default budgetsSlice.reducer;
+export default financeSlice.reducer;

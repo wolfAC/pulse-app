@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { RootState } from "@/store/index";
-import { addBudget, updateBudget } from "@/store/slices/budgets";
+import { addBudget, updateBudget } from "@/store/slices/finance";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -73,7 +73,7 @@ export function BudgetDialog({
   const currentEmail = useSelector(
     (state: RootState) => state.auth.currentEmail,
   );
-  const budgets = useSelector((state: RootState) => state.budgets.budgets);
+  const budgets = useSelector((state: RootState) => state.finance.budgets);
 
   const editingBudget = editingBudgetId
     ? budgets.find((b) => b.id === editingBudgetId)

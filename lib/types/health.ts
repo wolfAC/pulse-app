@@ -53,3 +53,8 @@ export interface HealthStats {
   calories: HealthMetric;
   water: HealthMetric;
 }
+
+export interface HealthState {
+  entries: HealthEntry[];
+  workouts: Workout[];
+}

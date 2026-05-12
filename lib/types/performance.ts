@@ -39,3 +39,7 @@ export const metricIcons: Record<keyof ReviewMetrics, string> = {
   communication: "MessageSquare",
   learning: "BookOpen",
 };
+
+export interface PerformanceState {
+  reviews: Review[];
+}
