@@ -24,6 +24,7 @@ export interface HealthEntry {
   value: number;
   unit: string;
   notes?: string;
+  createdAt: number;
 }
 
 export interface HealthMetric {
@@ -45,6 +46,7 @@ export interface Workout {
   caloriesBurned: number;
   distance?: number; // in km
   notes?: string;
+  createdAt: number;
 }
 
 export interface HealthStats {

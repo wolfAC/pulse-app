@@ -18,6 +18,7 @@ export interface Review {
   blockers: string[];
   improvements: string[];
   notes?: string;
+  createdAt: number;
 }
 
 export const periodLabels: Record<ReviewPeriod, string> = {

@@ -67,7 +67,7 @@ export function GoalsTracker() {
         dueDate: goalData.dueDate || "",
         milestones: [],
         tasks: [],
-        createdAt: new Date().toISOString().split("T")[0],
+        createdAt: +new Date(),
       };
       dispatch(addGoal(newGoal));
     }

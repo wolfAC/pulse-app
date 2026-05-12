@@ -24,7 +24,7 @@ export interface Goal {
   dueDate: string;
   milestones: Milestone[];
   tasks: Task[];
-  createdAt: string;
+  createdAt: number;
 }
 
 export interface GoalsState {

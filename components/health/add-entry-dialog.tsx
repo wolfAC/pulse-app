@@ -142,9 +142,9 @@ export function AddEntryDialog({ open, onOpenChange }: AddEntryDialogProps) {
       const config = metricTypes.find((m) => m.type === selectedMetric)!;
       dispatch(
         addEntry({
-          id: Date.now().toString(),
+          id: +new Date().toString(),
           userEmail: currentEmail,
-          date,
+          createdAt: +new Date(),
           type: selectedMetric,
           value: parseFloat(form.value),
           unit: config.unit,

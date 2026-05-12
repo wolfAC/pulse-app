@@ -24,7 +24,7 @@ export const sampleGoals: Goal[] = [
       { id: "t2", title: "Practice generics", completed: true },
       { id: "t3", title: "Build type-safe API", completed: false },
     ],
-    createdAt: "2026-01-15",
+    createdAt: +new Date(),
   },
   {
     id: "2",
@@ -45,7 +45,7 @@ export const sampleGoals: Goal[] = [
       { id: "t5", title: "Buy running gear", completed: true },
       { id: "t6", title: "Join running club", completed: false },
     ],
-    createdAt: "2026-02-01",
+    createdAt: +new Date(),
   },
   {
     id: "3",
@@ -66,7 +66,7 @@ export const sampleGoals: Goal[] = [
       { id: "t8", title: "Set daily reading time", completed: true },
       { id: "t9", title: "Join book club", completed: false },
     ],
-    createdAt: "2026-01-01",
+    createdAt: +new Date(),
   },
   {
     id: "4",
@@ -88,7 +88,7 @@ export const sampleGoals: Goal[] = [
       { id: "t11", title: "Complete exercises", completed: true },
       { id: "t12", title: "Submit final project", completed: true },
     ],
-    createdAt: "2025-12-01",
+    createdAt: +new Date(),
   },
 ];
 
@@ -112,6 +112,7 @@ export const sampleReviews: Review[] = [
     blockers: ["Waiting on API documentation from backend team"],
     improvements: ["Could improve code review turnaround time"],
     notes: "Overall productive day with good focus time.",
+    createdAt: +new Date(),
   },
   {
     id: "2",
@@ -134,6 +135,7 @@ export const sampleReviews: Review[] = [
       "Better time blocking for deep work",
       "Ask for clarification earlier",
     ],
+    createdAt: +new Date(),
   },
   {
     id: "3",
@@ -155,6 +157,7 @@ export const sampleReviews: Review[] = [
     blockers: [],
     improvements: ["Documentation could be more thorough"],
     notes: "Excellent week with strong delivery and team collaboration.",
+    createdAt: +new Date(),
   },
   {
     id: "4",
@@ -176,6 +179,7 @@ export const sampleReviews: Review[] = [
     blockers: ["Resource constraints mid-month"],
     improvements: ["Cross-team communication", "Better estimation accuracy"],
     notes: "Strong month overall with room for improvement in planning.",
+    createdAt: +new Date(),
   },
 ];
 
@@ -188,6 +192,7 @@ export const sampleHealthEntries: HealthEntry[] = [
     value: 7.5,
     unit: "hours",
     notes: "Slept well",
+    createdAt: +new Date(),
   },
   {
     id: "2",
@@ -196,6 +201,7 @@ export const sampleHealthEntries: HealthEntry[] = [
     type: "steps",
     value: 8432,
     unit: "steps",
+    createdAt: +new Date(),
   },
   {
     id: "3",
@@ -204,6 +210,7 @@ export const sampleHealthEntries: HealthEntry[] = [
     type: "calories",
     value: 1845,
     unit: "kcal",
+    createdAt: +new Date(),
   },
   {
     id: "4",
@@ -212,6 +219,7 @@ export const sampleHealthEntries: HealthEntry[] = [
     type: "water",
     value: 2.5,
     unit: "L",
+    createdAt: +new Date(),
   },
   {
     id: "5",
@@ -220,6 +228,7 @@ export const sampleHealthEntries: HealthEntry[] = [
     type: "sleep",
     value: 8.0,
     unit: "hours",
+    createdAt: +new Date(),
   },
   {
     id: "6",
@@ -228,6 +237,7 @@ export const sampleHealthEntries: HealthEntry[] = [
     type: "steps",
     value: 10200,
     unit: "steps",
+    createdAt: +new Date(),
   },
   {
     id: "7",
@@ -236,6 +246,7 @@ export const sampleHealthEntries: HealthEntry[] = [
     type: "calories",
     value: 2050,
     unit: "kcal",
+    createdAt: +new Date(),
   },
   {
     id: "8",
@@ -244,6 +255,7 @@ export const sampleHealthEntries: HealthEntry[] = [
     type: "water",
     value: 3.0,
     unit: "L",
+    createdAt: +new Date(),
   },
   {
     id: "9",
@@ -253,6 +265,7 @@ export const sampleHealthEntries: HealthEntry[] = [
     value: 6.8,
     unit: "hours",
     notes: "Late night",
+    createdAt: +new Date(),
   },
   {
     id: "10",
@@ -261,6 +274,7 @@ export const sampleHealthEntries: HealthEntry[] = [
     type: "steps",
     value: 7800,
     unit: "steps",
+    createdAt: +new Date(),
   },
   {
     id: "11",
@@ -269,6 +283,7 @@ export const sampleHealthEntries: HealthEntry[] = [
     type: "heart_rate",
     value: 72,
     unit: "bpm",
+    createdAt: +new Date(),
   },
   {
     id: "12",
@@ -277,6 +292,7 @@ export const sampleHealthEntries: HealthEntry[] = [
     type: "weight",
     value: 75.5,
     unit: "kg",
+    createdAt: +new Date(),
   },
 ];
 
@@ -291,6 +307,7 @@ export const sampleWorkouts: Workout[] = [
     caloriesBurned: 420,
     distance: 5.2,
     notes: "Felt great, personal best pace!",
+    createdAt: +new Date(),
   },
   {
     id: "2",
@@ -301,6 +318,7 @@ export const sampleWorkouts: Workout[] = [
     duration: 60,
     caloriesBurned: 320,
     notes: "Focused on chest and back",
+    createdAt: +new Date(),
   },
   {
     id: "3",
@@ -310,6 +328,7 @@ export const sampleWorkouts: Workout[] = [
     name: "Evening Yoga",
     duration: 30,
     caloriesBurned: 150,
+    createdAt: +new Date(),
   },
   {
     id: "4",
@@ -320,6 +339,7 @@ export const sampleWorkouts: Workout[] = [
     duration: 35,
     caloriesBurned: 280,
     distance: 12.5,
+    createdAt: +new Date(),
   },
   {
     id: "5",
@@ -330,6 +350,7 @@ export const sampleWorkouts: Workout[] = [
     duration: 25,
     caloriesBurned: 350,
     notes: "High intensity intervals",
+    createdAt: +new Date(),
   },
   {
     id: "6",
@@ -340,6 +361,7 @@ export const sampleWorkouts: Workout[] = [
     duration: 40,
     caloriesBurned: 380,
     distance: 1.5,
+    createdAt: +new Date(),
   },
 ];
 
@@ -355,7 +377,7 @@ export const sampleTransactions: Transaction[] = [
     counterParty: "Swiggy",
     tags: ["food"],
     source: "manual",
-    createdAt: Date.now(),
+    createdAt: +new Date(),
   },
   {
     id: "tx2",
@@ -366,7 +388,7 @@ export const sampleTransactions: Transaction[] = [
     date: "2026-05-01",
     note: "Monthly salary",
     source: "manual",
-    createdAt: Date.now(),
+    createdAt: +new Date(),
   },
 ];
 

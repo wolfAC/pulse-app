@@ -22,6 +22,10 @@
 - camelCase functions
 - kebab-case route folders
 
+## Date and Time
+
+- Always use timestamp in ms only
+
 ## Forms
 
 - controlled inputs
