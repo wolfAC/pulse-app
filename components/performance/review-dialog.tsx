@@ -23,6 +23,8 @@ import {
 } from "@/lib/types/performance";
 import { Zap, Award, MessageSquare, BookOpen, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
 
 interface ReviewDialogProps {
   open: boolean;
@@ -44,7 +46,7 @@ export function ReviewDialog({
   review,
   onSave,
 }: ReviewDialogProps) {
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState(Date.now());
   const [period, setPeriod] = useState<ReviewPeriod>("daily");
   const [metrics, setMetrics] = useState<ReviewMetrics>({
     productivity: 75,
@@ -60,30 +62,34 @@ export function ReviewDialog({
   const [newBlocker, setNewBlocker] = useState("");
   const [newImprovement, setNewImprovement] = useState("");
 
+  const currentEmail = useSelector(
+    (state: RootState) => state.auth.currentEmail,
+  );
+
   useEffect(() => {
     if (review) {
-      setDate(review.date);
+      setDate(review.createdAt);
       setPeriod(review.period);
       setMetrics(review.metrics);
       setHighlights(review.highlights);
       setBlockers(review.blockers);
       setImprovements(review.improvements);
       setNotes(review.notes || "");
-    } else {
-      const today = new Date().toISOString().split("T")[0];
-      setDate(today);
-      setPeriod("daily");
-      setMetrics({
-        productivity: 75,
-        quality: 75,
-        communication: 75,
-        learning: 75,
-      });
-      setHighlights([]);
-      setBlockers([]);
-      setImprovements([]);
-      setNotes("");
+      return;
     }
+    const today = Date.now();
+    setDate(today);
+    setPeriod("daily");
+    setMetrics({
+      productivity: 75,
+      quality: 75,
+      communication: 75,
+      learning: 75,
+    });
+    setHighlights([]);
+    setBlockers([]);
+    setImprovements([]);
+    setNotes("");
   }, [review, open]);
 
   const handleAddItem = (
@@ -124,8 +130,11 @@ export function ReviewDialog({
   };
 
   const handleSave = () => {
+    if (!currentEmail) return;
+
     onSave({
-      date,
+      createdAt: +new Date(),
+      userEmail: currentEmail,
       period,
       metrics,
       highlights,
@@ -220,7 +229,7 @@ export function ReviewDialog({
               <Input
                 type="date"
                 value={date}
-                onChange={(e) => setDate(e.target.value)}
+                onChange={(e) => setDate(new Date(e.target.value).getTime())}
               />
             </div>
             <div className="space-y-2">

@@ -51,8 +51,8 @@ const metricIcons = {
 export function ReviewCard({ review, onEdit, onDelete }: ReviewCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const formatReviewDate = (dateStr: string) => {
-    return formatDate(dateStr, { includeWeekday: true, includeYear: true });
+  const formatReviewDate = (dateValue: number) => {
+    return formatDate(dateValue, { includeWeekday: true, includeYear: true });
   };
 
   const getPeriodColor = (period: string) => {
@@ -106,7 +106,7 @@ export function ReviewCard({ review, onEdit, onDelete }: ReviewCardProps) {
                 </div>
                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                   <Calendar className="h-3.5 w-3.5" />
-                  {formatReviewDate(review.date)}
+                  {formatReviewDate(review.createdAt)}
                 </div>
               </div>
             </div>

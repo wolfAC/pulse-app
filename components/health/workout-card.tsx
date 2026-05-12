@@ -98,8 +98,8 @@ export function WorkoutCard({ workout, onEdit, onDelete }: WorkoutCardProps) {
     return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
   };
 
-  const formatWorkoutDate = (dateStr: string) => {
-    return formatDate(dateStr, { includeWeekday: true });
+  const formatWorkoutDate = (dateValue: number) => {
+    return formatDate(dateValue, { includeWeekday: true });
   };
 
   return (
@@ -118,7 +118,7 @@ export function WorkoutCard({ workout, onEdit, onDelete }: WorkoutCardProps) {
             <div>
               <h3 className="font-semibold">{workout.name}</h3>
               <p className="text-xs text-muted-foreground">
-                {formatWorkoutDate(workout.date)}
+                {formatWorkoutDate(workout.createdAt)}
               </p>
             </div>
           </div>

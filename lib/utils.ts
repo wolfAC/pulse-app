@@ -10,11 +10,11 @@ export function cn(...inputs: ClassValue[]) {
  * Uses a fixed locale and formatting to ensure server/client consistency.
  */
 export function formatDate(
-  dateStr: string,
+  dateValue: string | number,
   options?: { includeWeekday?: boolean; includeYear?: boolean },
 ) {
-  const date = new Date(dateStr);
-  const parts: string[] = [];
+  const date = new Date(dateValue);
+  const parts = [];
 
   const months = [
     "Jan",
@@ -30,6 +30,7 @@ export function formatDate(
     "Nov",
     "Dec",
   ];
+
   const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   if (options?.includeWeekday) {

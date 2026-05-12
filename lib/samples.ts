@@ -96,7 +96,6 @@ export const sampleReviews: Review[] = [
   {
     id: "1",
     userEmail: "wolf8132609@gmail.com",
-    date: "2026-05-15",
     period: "daily",
     overallScore: 85,
     metrics: {
@@ -117,7 +116,6 @@ export const sampleReviews: Review[] = [
   {
     id: "2",
     userEmail: "wolf8132609@gmail.com",
-    date: "2026-05-14",
     period: "daily",
     overallScore: 72,
     metrics: {
@@ -140,7 +138,6 @@ export const sampleReviews: Review[] = [
   {
     id: "3",
     userEmail: "wolf8132609@gmail.com",
-    date: "2026-05-08",
     period: "weekly",
     overallScore: 88,
     metrics: {
@@ -162,7 +159,6 @@ export const sampleReviews: Review[] = [
   {
     id: "4",
     userEmail: "wolf8132609@gmail.com",
-    date: "2026-05-01",
     period: "monthly",
     overallScore: 82,
     metrics: {
@@ -187,7 +183,6 @@ export const sampleHealthEntries: HealthEntry[] = [
   {
     id: "1",
     userEmail: "wolf8132609@gmail.com",
-    date: "2024-01-15",
     type: "sleep",
     value: 7.5,
     unit: "hours",
@@ -197,7 +192,6 @@ export const sampleHealthEntries: HealthEntry[] = [
   {
     id: "2",
     userEmail: "wolf8132609@gmail.com",
-    date: "2024-01-15",
     type: "steps",
     value: 8432,
     unit: "steps",
@@ -206,7 +200,6 @@ export const sampleHealthEntries: HealthEntry[] = [
   {
     id: "3",
     userEmail: "wolf8132609@gmail.com",
-    date: "2024-01-15",
     type: "calories",
     value: 1845,
     unit: "kcal",
@@ -215,7 +208,6 @@ export const sampleHealthEntries: HealthEntry[] = [
   {
     id: "4",
     userEmail: "wolf8132609@gmail.com",
-    date: "2024-01-15",
     type: "water",
     value: 2.5,
     unit: "L",
@@ -224,7 +216,6 @@ export const sampleHealthEntries: HealthEntry[] = [
   {
     id: "5",
     userEmail: "wolf8132609@gmail.com",
-    date: "2024-01-14",
     type: "sleep",
     value: 8.0,
     unit: "hours",
@@ -233,7 +224,6 @@ export const sampleHealthEntries: HealthEntry[] = [
   {
     id: "6",
     userEmail: "wolf8132609@gmail.com",
-    date: "2024-01-14",
     type: "steps",
     value: 10200,
     unit: "steps",
@@ -242,7 +232,6 @@ export const sampleHealthEntries: HealthEntry[] = [
   {
     id: "7",
     userEmail: "wolf8132609@gmail.com",
-    date: "2024-01-14",
     type: "calories",
     value: 2050,
     unit: "kcal",
@@ -251,7 +240,6 @@ export const sampleHealthEntries: HealthEntry[] = [
   {
     id: "8",
     userEmail: "wolf8132609@gmail.com",
-    date: "2024-01-14",
     type: "water",
     value: 3.0,
     unit: "L",
@@ -260,7 +248,6 @@ export const sampleHealthEntries: HealthEntry[] = [
   {
     id: "9",
     userEmail: "wolf8132609@gmail.com",
-    date: "2024-01-13",
     type: "sleep",
     value: 6.8,
     unit: "hours",
@@ -270,7 +257,6 @@ export const sampleHealthEntries: HealthEntry[] = [
   {
     id: "10",
     userEmail: "wolf8132609@gmail.com",
-    date: "2024-01-13",
     type: "steps",
     value: 7800,
     unit: "steps",
@@ -279,7 +265,6 @@ export const sampleHealthEntries: HealthEntry[] = [
   {
     id: "11",
     userEmail: "wolf8132609@gmail.com",
-    date: "2024-01-13",
     type: "heart_rate",
     value: 72,
     unit: "bpm",
@@ -288,7 +273,6 @@ export const sampleHealthEntries: HealthEntry[] = [
   {
     id: "12",
     userEmail: "wolf8132609@gmail.com",
-    date: "2024-01-13",
     type: "weight",
     value: 75.5,
     unit: "kg",
@@ -300,7 +284,6 @@ export const sampleWorkouts: Workout[] = [
   {
     id: "1",
     userEmail: "wolf8132609@gmail.com",
-    date: "2024-01-15",
     type: "running",
     name: "Morning Run",
     duration: 45,
@@ -312,7 +295,6 @@ export const sampleWorkouts: Workout[] = [
   {
     id: "2",
     userEmail: "wolf8132609@gmail.com",
-    date: "2024-01-14",
     type: "strength",
     name: "Upper Body",
     duration: 60,
@@ -323,7 +305,6 @@ export const sampleWorkouts: Workout[] = [
   {
     id: "3",
     userEmail: "wolf8132609@gmail.com",
-    date: "2024-01-13",
     type: "yoga",
     name: "Evening Yoga",
     duration: 30,
@@ -333,7 +314,6 @@ export const sampleWorkouts: Workout[] = [
   {
     id: "4",
     userEmail: "wolf8132609@gmail.com",
-    date: "2024-01-12",
     type: "cycling",
     name: "Bike Commute",
     duration: 35,
@@ -344,7 +324,6 @@ export const sampleWorkouts: Workout[] = [
   {
     id: "5",
     userEmail: "wolf8132609@gmail.com",
-    date: "2024-01-11",
     type: "hiit",
     name: "HIIT Session",
     duration: 25,
@@ -355,7 +334,6 @@ export const sampleWorkouts: Workout[] = [
   {
     id: "6",
     userEmail: "wolf8132609@gmail.com",
-    date: "2024-01-10",
     type: "swimming",
     name: "Pool Laps",
     duration: 40,

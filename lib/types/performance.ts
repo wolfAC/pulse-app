@@ -10,7 +10,6 @@ export interface ReviewMetrics {
 export interface Review {
   id: string;
   userEmail: string;
-  date: string;
   period: ReviewPeriod;
   overallScore: number; // 0-100, calculated from metrics
   metrics: ReviewMetrics;

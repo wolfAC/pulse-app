@@ -1,13 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Review, ReviewPeriod } from "@/lib/types/performance";
 import { cn } from "@/lib/utils";
 import { LayoutGrid, List, Plus, TrendingUp } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   addReview,
@@ -23,17 +23,34 @@ type FilterType = "all" | ReviewPeriod;
 
 export function PerformanceTracker() {
   const dispatch = useDispatch();
-  const reviews = useSelector((state: RootState) => state.performance.reviews);
+
+  // ── current user — same pattern as GoalsTracker ──────────────────────────
+  const currentEmail = useSelector(
+    (state: RootState) => state.auth.currentEmail,
+  );
+  const allReviews = useSelector(
+    (state: RootState) => state.performance.reviews ?? [],
+  );
+
+  // only this user's reviews
+  const reviews = useMemo(
+    () => allReviews.filter((r) => r.userEmail === currentEmail),
+    [allReviews, currentEmail],
+  );
 
   const [filter, setFilter] = useState<FilterType>("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingReview, setEditingReview] = useState<Review | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-  const filteredReviews = reviews
-    .filter((r) => filter === "all" || r.period === filter)
-    .slice() // avoid mutating the Redux state array
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const filteredReviews = useMemo(
+    () =>
+      reviews
+        .filter((r) => filter === "all" || r.period === filter)
+        .slice()
+        .sort((a, b) => b.createdAt - a.createdAt),
+    [reviews, filter],
+  );
 
   const averageScore =
     reviews.length > 0
@@ -44,9 +61,7 @@ export function PerformanceTracker() {
 
   const trend = (() => {
     if (reviews.length < 2) return 0;
-    const sorted = [...reviews].sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-    );
+    const sorted = [...reviews].sort((a, b) => b.createdAt - a.createdAt);
     return sorted[0].overallScore - sorted[1].overallScore;
   })();
 
@@ -62,7 +77,6 @@ export function PerformanceTracker() {
     );
 
     if (editingReview) {
-      // Update existing review via Redux action
       dispatch(
         updateReview({
           ...reviewData,
@@ -71,11 +85,11 @@ export function PerformanceTracker() {
         }),
       );
     } else {
-      // Add new review via Redux action
       dispatch(
         addReview({
           ...reviewData,
           id: crypto.randomUUID(),
+          userEmail: currentEmail!, // ── stamp the owner
           overallScore,
         }),
       );
@@ -90,7 +104,6 @@ export function PerformanceTracker() {
   };
 
   const handleDelete = (id: string) => {
-    // Delete review via Redux action
     dispatch(deleteReview(id));
   };
 
@@ -151,7 +164,7 @@ export function PerformanceTracker() {
             <p className="text-sm font-medium">
               {
                 reviews.filter((r) => {
-                  const d = new Date(r.date);
+                  const d = new Date(r.createdAt);
                   const now = new Date();
                   return (
                     d.getMonth() === now.getMonth() &&
@@ -166,7 +179,6 @@ export function PerformanceTracker() {
       </Card>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        {/* Filter Tabs */}
         <Tabs value={filter} onValueChange={(v) => setFilter(v as FilterType)}>
           <TabsList>
             <TabsTrigger value="all">All ({reviews.length})</TabsTrigger>
@@ -182,7 +194,6 @@ export function PerformanceTracker() {
           </TabsList>
         </Tabs>
 
-        {/* View Mode Toggle */}
         <div className="flex items-center gap-1 rounded-lg border p-1">
           <Button
             variant={viewMode === "grid" ? "secondary" : "ghost"}
@@ -205,20 +216,21 @@ export function PerformanceTracker() {
         </div>
       </div>
 
-      {/* Content */}
       {filteredReviews.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
-          <p className="text-muted-foreground">No reviews yet</p>
-          <Button
-            variant="link"
-            onClick={() => {
-              setEditingReview(null);
-              setDialogOpen(true);
-            }}
-          >
-            Add your first review
-          </Button>
-        </div>
+        <Card>
+          <CardContent className="py-12 text-center">
+            <p className="text-muted-foreground mb-4">No reviews found</p>
+            <Button
+              variant="link"
+              onClick={() => {
+                setEditingReview(null);
+                setDialogOpen(true);
+              }}
+            >
+              Create your first review
+            </Button>
+          </CardContent>
+        </Card>
       ) : (
         <div
           className={

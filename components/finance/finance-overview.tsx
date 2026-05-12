@@ -110,9 +110,9 @@ export function BudgetsOverview({
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <CardTitle>Budgets — {currentMonth}</CardTitle>
-              <Button size="sm" variant="outline" onClick={onAddBudget}>
-                <Plus className="mr-1 h-3.5 w-3.5" />
-                Add
+
+              <Button variant="link" onClick={onAddBudget}>
+                Add your first budget
               </Button>
             </div>
             <CardDescription>
@@ -248,9 +248,8 @@ export function BudgetsOverview({
             <p className="text-muted-foreground mb-4">
               No budgets set for {currentMonth}.
             </p>
-            <Button onClick={onAddBudget}>
-              <Plus className="mr-2 h-4 w-4" />
-              Create Budget
+            <Button variant="link" onClick={onAddBudget}>
+              Add your first Budget
             </Button>
           </CardContent>
         </Card>

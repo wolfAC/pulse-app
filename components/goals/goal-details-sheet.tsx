@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Sheet,
@@ -6,28 +6,28 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Separator } from "@/components/ui/separator"
-import { Calendar, Flag, ListTodo, Milestone } from "lucide-react"
-import type { Goal, Priority } from "@/lib/types/goal"
-import { formatSimpleDate } from "@/lib/utils"
+} from "@/components/ui/sheet";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
+import { Calendar, Flag, ListTodo, Milestone } from "lucide-react";
+import type { Goal, Priority } from "@/lib/types/goal";
+import { formatSimpleDate } from "@/lib/utils";
 
 interface GoalDetailsSheetProps {
-  goal: Goal | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onToggleMilestone: (goalId: string, milestoneId: string) => void
-  onToggleTask: (goalId: string, taskId: string) => void
+  goal: Goal | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onToggleMilestone: (goalId: string, milestoneId: string) => void;
+  onToggleTask: (goalId: string, taskId: string) => void;
 }
 
 const priorityConfig: Record<Priority, { label: string; className: string }> = {
   low: { label: "Low", className: "bg-muted text-muted-foreground" },
   medium: { label: "Medium", className: "bg-chart-3/20 text-chart-3" },
   high: { label: "High", className: "bg-destructive/20 text-destructive" },
-}
+};
 
 export function GoalDetailsSheet({
   goal,
@@ -36,9 +36,9 @@ export function GoalDetailsSheet({
   onToggleMilestone,
   onToggleTask,
 }: GoalDetailsSheetProps) {
-  if (!goal) return null
+  if (!goal) return null;
 
-  const priority = priorityConfig[goal.priority]
+  const priority = priorityConfig[goal.priority];
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -48,7 +48,7 @@ export function GoalDetailsSheet({
           <SheetDescription>{goal.description}</SheetDescription>
         </SheetHeader>
 
-        <div className="mt-6 space-y-6">
+        <div className="mt-2 space-y-6 p-6">
           <div className="flex flex-wrap items-center gap-3">
             <Badge className={priority.className} variant="secondary">
               <Flag className="mr-1 size-3" />
@@ -76,7 +76,9 @@ export function GoalDetailsSheet({
               <h4 className="font-semibold">Milestones</h4>
             </div>
             {goal.milestones.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No milestones added yet.</p>
+              <p className="text-sm text-muted-foreground">
+                No milestones added yet.
+              </p>
             ) : (
               <div className="space-y-3">
                 {goal.milestones.map((milestone) => (
@@ -84,12 +86,16 @@ export function GoalDetailsSheet({
                     <Checkbox
                       id={`milestone-${milestone.id}`}
                       checked={milestone.completed}
-                      onCheckedChange={() => onToggleMilestone(goal.id, milestone.id)}
+                      onCheckedChange={() =>
+                        onToggleMilestone(goal.id, milestone.id)
+                      }
                     />
                     <label
                       htmlFor={`milestone-${milestone.id}`}
                       className={`text-sm cursor-pointer ${
-                        milestone.completed ? "line-through text-muted-foreground" : ""
+                        milestone.completed
+                          ? "line-through text-muted-foreground"
+                          : ""
                       }`}
                     >
                       {milestone.title}
@@ -108,7 +114,9 @@ export function GoalDetailsSheet({
               <h4 className="font-semibold">Tasks</h4>
             </div>
             {goal.tasks.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No tasks added yet.</p>
+              <p className="text-sm text-muted-foreground">
+                No tasks added yet.
+              </p>
             ) : (
               <div className="space-y-3">
                 {goal.tasks.map((task) => (
@@ -121,7 +129,9 @@ export function GoalDetailsSheet({
                     <label
                       htmlFor={`task-${task.id}`}
                       className={`text-sm cursor-pointer ${
-                        task.completed ? "line-through text-muted-foreground" : ""
+                        task.completed
+                          ? "line-through text-muted-foreground"
+                          : ""
                       }`}
                     >
                       {task.title}
@@ -134,5 +144,5 @@ export function GoalDetailsSheet({
         </div>
       </SheetContent>
     </Sheet>
-  )
+  );
 }

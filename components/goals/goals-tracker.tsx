@@ -12,6 +12,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { GoalCard } from "./goal-card";
 import { GoalDetailsSheet } from "./goal-details-sheet";
 import { GoalDialog } from "./goal-dialog";
+import { Card, CardContent } from "../ui/card";
 
 type TabValue = "active" | "completed" | "all";
 
@@ -182,18 +183,20 @@ export function GoalsTracker() {
       </div>
 
       {filteredGoals.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
-          <p className="text-muted-foreground">No goals found</p>
-          <Button
-            variant="link"
-            onClick={() => {
-              setEditingGoal(null);
-              setDialogOpen(true);
-            }}
-          >
-            Create your first goal
-          </Button>
-        </div>
+        <Card>
+          <CardContent className="py-12 text-center">
+            <p className="text-muted-foreground mb-4">No goals found</p>
+            <Button
+              variant="link"
+              onClick={() => {
+                setEditingGoal(null);
+                setDialogOpen(true);
+              }}
+            >
+              Create your first goal
+            </Button>
+          </CardContent>
+        </Card>
       ) : (
         <div
           className={

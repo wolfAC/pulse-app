@@ -8,7 +8,7 @@ import { RootState } from "@/store/index";
 import { LayoutGrid, List, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useSelector } from "react-redux";
-import { AddEntryDialog } from "./add-entry-dialog";
+import { HealthDialog } from "./health-dialog";
 import { HealthLogs } from "./health-logs";
 import { HealthOverview } from "./health-overview";
 import { WorkoutsSection } from "./workouts-section";
@@ -43,7 +43,7 @@ export function HealthTracker() {
     const getLatest = (type: string) =>
       entries
         .filter((e) => e.type === type)
-        .sort((a, b) => b.date.localeCompare(a.date))[0];
+        .sort((a, b) => b.createdAt - a.createdAt)[0];
 
     const avgSteps = (() => {
       const stepEntries = entries.filter((e) => e.type === "steps");
@@ -57,10 +57,9 @@ export function HealthTracker() {
     const latestCalories = getLatest("calories");
     const latestSleep = getLatest("sleep");
 
-    const now = new Date();
+    const now = Date.now();
     const workoutsThisWeek = workouts.filter((w) => {
-      const d = new Date(w.date);
-      const diff = (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24);
+      const diff = (now - w.createdAt) / (1000 * 60 * 60 * 24);
       return diff <= 7;
     }).length;
 
@@ -136,7 +135,7 @@ export function HealthTracker() {
       {activeTab === "logs" && <HealthLogs userEmail={currentEmail} />}
       {activeTab === "workouts" && <WorkoutsSection userEmail={currentEmail} />}
 
-      <AddEntryDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <HealthDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </div>
   );
 }

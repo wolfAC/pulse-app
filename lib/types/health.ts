@@ -19,7 +19,6 @@ export type WorkoutType =
 export interface HealthEntry {
   id: string;
   userEmail: string;
-  date: string;
   type: HealthMetricType;
   value: number;
   unit: string;
@@ -39,7 +38,6 @@ export interface HealthMetric {
 export interface Workout {
   id: string;
   userEmail: string;
-  date: string;
   type: WorkoutType;
   name: string;
   duration: number; // in minutes

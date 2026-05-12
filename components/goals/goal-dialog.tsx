@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,61 +8,68 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import type { Goal, Priority } from "@/lib/types/goal"
+} from "@/components/ui/select";
+import type { Goal, Priority } from "@/lib/types/goal";
 
 interface GoalDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  goal?: Goal | null
-  onSave: (goal: Partial<Goal>) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  goal?: Goal | null;
+  onSave: (goal: Partial<Goal>) => void;
 }
 
-export function GoalDialog({ open, onOpenChange, goal, onSave }: GoalDialogProps) {
-  const [title, setTitle] = useState("")
-  const [description, setDescription] = useState("")
-  const [priority, setPriority] = useState<Priority>("medium")
-  const [dueDate, setDueDate] = useState("")
+export function GoalDialog({
+  open,
+  onOpenChange,
+  goal,
+  onSave,
+}: GoalDialogProps) {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [priority, setPriority] = useState<Priority>("medium");
+  const [dueDate, setDueDate] = useState("");
 
-  const isEditing = !!goal
+  const isEditing = !!goal;
 
   useEffect(() => {
     if (goal) {
-      setTitle(goal.title)
-      setDescription(goal.description)
-      setPriority(goal.priority)
-      setDueDate(goal.dueDate)
-    } else {
-      setTitle("")
-      setDescription("")
-      setPriority("medium")
-      setDueDate("")
+      setTitle(goal.title);
+      setDescription(goal.description);
+      setPriority(goal.priority);
+      setDueDate(goal.dueDate);
+      return;
     }
-  }, [goal, open])
+    setTitle("");
+    setDescription("");
+    setPriority("medium");
+    setDueDate("");
+  }, [goal, open]);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     onSave({
       ...(goal && { id: goal.id }),
       title,
       description,
       priority,
       dueDate,
-      ...(isEditing ? {} : { progress: 0, status: "active", milestones: [], tasks: [] }),
-    })
-    onOpenChange(false)
-  }
+      ...(isEditing
+        ? {}
+        : { progress: 0, status: "active", milestones: [], tasks: [] }),
+    });
+    onOpenChange(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -100,7 +107,10 @@ export function GoalDialog({ open, onOpenChange, goal, onSave }: GoalDialogProps
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="priority">Priority</Label>
-                <Select value={priority} onValueChange={(v) => setPriority(v as Priority)}>
+                <Select
+                  value={priority}
+                  onValueChange={(v) => setPriority(v as Priority)}
+                >
                   <SelectTrigger id="priority">
                     <SelectValue />
                   </SelectTrigger>
@@ -124,13 +134,19 @@ export function GoalDialog({ open, onOpenChange, goal, onSave }: GoalDialogProps
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
-            <Button type="submit">{isEditing ? "Save Changes" : "Create Goal"}</Button>
+            <Button type="submit">
+              {isEditing ? "Save Changes" : "Create Goal"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

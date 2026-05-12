@@ -183,7 +183,7 @@ export function HealthLogs({ userEmail }: HealthLogsProps) {
                   </div>
                   <div className="flex items-center sm:justify-start pl-11 sm:pl-0">
                     <span className="text-sm text-muted-foreground">
-                      {formatDate(entry.date, { includeWeekday: true })}
+                      {formatDate(entry.createdAt, { includeWeekday: true })}
                     </span>
                   </div>
                   <div className="flex items-center sm:justify-end pl-11 sm:pl-0">

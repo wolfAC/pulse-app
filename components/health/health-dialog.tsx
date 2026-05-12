@@ -108,7 +108,7 @@ const emptyForm = {
   notes: "",
 };
 
-export function AddEntryDialog({ open, onOpenChange }: AddEntryDialogProps) {
+export function HealthDialog({ open, onOpenChange }: AddEntryDialogProps) {
   const dispatch = useDispatch();
 
   // Get the logged-in user's email to stamp on entries
@@ -142,7 +142,7 @@ export function AddEntryDialog({ open, onOpenChange }: AddEntryDialogProps) {
       const config = metricTypes.find((m) => m.type === selectedMetric)!;
       dispatch(
         addEntry({
-          id: +new Date().toString(),
+          id: Date.now().toString(),
           userEmail: currentEmail,
           createdAt: +new Date(),
           type: selectedMetric,
@@ -157,13 +157,13 @@ export function AddEntryDialog({ open, onOpenChange }: AddEntryDialogProps) {
         addWorkout({
           id: Date.now().toString(),
           userEmail: currentEmail,
-          date,
           type: selectedWorkout,
           name: form.workoutName,
           duration: parseInt(form.duration),
           caloriesBurned: parseInt(form.calories),
           distance: form.distance ? parseFloat(form.distance) : undefined,
           notes: form.notes || undefined,
+          createdAt: +new Date(),
         }),
       );
     }

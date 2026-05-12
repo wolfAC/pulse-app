@@ -8,7 +8,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, TrendingUp } from "lucide-react";
+import { BarChart3, TrendingUp, TrendingDown } from "lucide-react";
 import {
   AreaChart,
   Area,
@@ -35,15 +35,20 @@ export function WeeklyActivityChart() {
   );
 
   // Build last-7-days chart data from workouts
-  const last7 = [...workouts]
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 7)
-    .reverse();
+  const sorted = [...workouts].sort((a, b) => b.createdAt - a.createdAt);
+  const last7 = sorted.slice(0, 7).reverse();
+  const prev7 = sorted.slice(7, 14);
 
   const totalHours = last7.reduce((sum, w) => sum + w.duration, 0) / 60;
+  const prevHours = prev7.reduce((sum, w) => sum + w.duration, 0) / 60;
+  const percentChange =
+    prevHours > 0 ? ((totalHours - prevHours) / prevHours) * 100 : 0;
+  const isPositive = percentChange >= 0;
 
   const data = last7.map((w) => ({
-    name: new Date(w.date).toLocaleDateString("en-US", { weekday: "short" }),
+    name: new Date(w.createdAt).toLocaleDateString("en-US", {
+      weekday: "short",
+    }),
     productivity: w.caloriesBurned ?? 0,
     focus: w.duration ?? 0,
   }));
@@ -56,14 +61,23 @@ export function WeeklyActivityChart() {
             Weekly Activity
           </CardTitle>
           <CardDescription className="mt-1 flex items-center gap-2">
-            <span className="text-2xl font-bold text-foreground">42.5h</span>
-            <Badge
-              variant="secondary"
-              className="bg-accent/20 text-accent gap-1"
-            >
-              <TrendingUp className="size-3" />
-              +8.2%
-            </Badge>
+            <span className="text-2xl font-bold text-foreground">
+              {totalHours.toFixed(1)}h
+            </span>
+            {prevHours > 0 && (
+              <Badge
+                variant="secondary"
+                className={`gap-1 ${isPositive ? "bg-accent/20 text-accent" : "bg-destructive/20 text-destructive"}`}
+              >
+                {isPositive ? (
+                  <TrendingUp className="size-3" />
+                ) : (
+                  <TrendingDown className="size-3" />
+                )}
+                {isPositive ? "+" : ""}
+                {percentChange.toFixed(1)}%
+              </Badge>
+            )}
           </CardDescription>
         </div>
         <div className="flex size-9 items-center justify-center rounded-lg bg-chart-1/10">

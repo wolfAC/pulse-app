@@ -40,33 +40,49 @@ export function GoalsProgress() {
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        {goals.map((goal) => (
-          <div key={goal.id} className="space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {goal.progress === 100 ? (
-                  <CheckCircle2 className="size-4 text-accent" />
-                ) : (
-                  <div className="size-2 rounded-full bg-muted-foreground/40" />
-                )}
-                <span className="text-sm font-medium">{goal.title}</span>
-              </div>
-              <Badge
-                variant="secondary"
-                className={
-                  statusColors[goal.status as keyof typeof statusColors]
-                }
-              >
-                {statusLabels[goal.status as keyof typeof statusLabels]}
-              </Badge>
+        {goals.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-48 gap-3 text-center">
+            <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+              <Target className="size-6 text-muted-foreground" />
             </div>
-            <Progress value={goal.progress} className="h-2" />
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>{goal.progress}% complete</span>
-              <span>Due {goal.dueDate}</span>
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                No goals yet
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Create a goal to start tracking your progress
+              </p>
             </div>
           </div>
-        ))}
+        ) : (
+          goals.map((goal) => (
+            <div key={goal.id} className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {goal.progress === 100 ? (
+                    <CheckCircle2 className="size-4 text-accent" />
+                  ) : (
+                    <div className="size-2 rounded-full bg-muted-foreground/40" />
+                  )}
+                  <span className="text-sm font-medium">{goal.title}</span>
+                </div>
+                <Badge
+                  variant="secondary"
+                  className={
+                    statusColors[goal.status as keyof typeof statusColors]
+                  }
+                >
+                  {statusLabels[goal.status as keyof typeof statusLabels]}
+                </Badge>
+              </div>
+              <Progress value={goal.progress} className="h-2" />
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>{goal.progress}% complete</span>
+                <span>Due {goal.dueDate}</span>
+              </div>
+            </div>
+          ))
+        )}
       </CardContent>
     </Card>
   );

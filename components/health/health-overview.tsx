@@ -24,17 +24,17 @@ interface HealthOverviewProps {
 function getLatestByType(entries: HealthEntry[], type: string) {
   return entries
     .filter((e) => e.type === type)
-    .sort((a, b) => b.date.localeCompare(a.date))[0];
+    .sort((a, b) => b.createdAt - a.createdAt)[0];
 }
 
 function buildWeeklyData(entries: HealthEntry[]) {
-  const sorted = [...entries].sort((a, b) => a.date.localeCompare(b.date));
-  const uniqueDates = [...new Set(sorted.map((e) => e.date))].slice(-7);
+  const sorted = [...entries].sort((a, b) => a.createdAt - b.createdAt);
+  const uniqueDates = [...new Set(sorted.map((e) => e.createdAt))].slice(-7);
   return uniqueDates.map((date) => {
     const day = new Date(date).toLocaleDateString("en-US", {
       weekday: "short",
     });
-    const dayEntries = entries.filter((e) => e.date === date);
+    const dayEntries = entries.filter((e) => e.createdAt === date);
     const get = (type: string) =>
       dayEntries.find((e) => e.type === type)?.value ?? 0;
     return {
