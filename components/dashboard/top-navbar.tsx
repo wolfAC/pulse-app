@@ -12,7 +12,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bell, Search, Command } from "lucide-react";
+import { Bell, Search, Command, Zap } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/store";
+import { logout } from "@/store/slices/auth";
+import { useRouter } from "next/navigation";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const notifications = [
   {
@@ -39,11 +44,44 @@ const notifications = [
 ];
 
 export function TopNavbar() {
+  const dispatch = useDispatch();
+  const router = useRouter();
+  const isMobile = useIsMobile();
+
+  const currentEmail = useSelector(
+    (state: RootState) => state.auth.currentEmail,
+  );
+
+  const user = useSelector((state: RootState) =>
+    currentEmail ? state.auth.users[currentEmail] : null,
+  );
+
+  // Initials from name for avatar fallback
+  const initials = user?.name
+    ? user.name
+        .split(" ")
+        .map((w) => w[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+    : "?";
+
+  const handleSignOut = () => {
+    dispatch(logout());
+    router.replace("/login");
+  };
+
   const unreadCount = notifications.filter((n) => n.unread).length;
 
   return (
     <header className="sticky top-0 z-50 flex h-14 items-center gap-4 border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 px-4 lg:px-6">
-      <SidebarTrigger className="-ml-1" />
+      {isMobile ? (
+        <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+          <Zap className="size-4" />
+        </div>
+      ) : (
+        <SidebarTrigger className="-ml-1" />
+      )}
 
       <div className="flex-1">
         <Button
@@ -116,16 +154,18 @@ export function TopNavbar() {
                   src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face"
                   alt="User"
                 />
-                <AvatarFallback>JD</AvatarFallback>
+                <AvatarFallback>{initials}</AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>
               <div className="flex flex-col gap-1">
-                <span>John Doe</span>
-                <span className="text-xs font-normal text-muted-foreground">
-                  john@example.com
+                <span className="font-medium text-sm truncate">
+                  {user?.name ?? "—"}
+                </span>
+                <span className="text-xs text-muted-foreground truncate">
+                  {user?.email ?? "—"}
                 </span>
               </div>
             </DropdownMenuLabel>
@@ -134,7 +174,10 @@ export function TopNavbar() {
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuItem>Billing</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">
+            <DropdownMenuItem
+              className="text-destructive"
+              onClick={handleSignOut}
+            >
               Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>

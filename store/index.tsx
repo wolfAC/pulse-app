@@ -16,7 +16,7 @@ import rootReducer, { AppState } from "./rootReducer";
 const persistConfig = {
   key: "pulse-app",
   storage,
-  whitelist: ["auth", "app", "goals", "health", "performance", "finance"],
+  whitelist: ["auth", "app", "goals", "health", "performance", "budgets"],
 };
 
 const persistedReducer = persistReducer<AppState>(persistConfig, rootReducer);

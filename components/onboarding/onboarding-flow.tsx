@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { useDispatch } from "react-redux";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,21 +15,23 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { cn } from "@/lib/utils";
-import { registerUser, login } from "@/store/slices/auth";
+import { login, registerUser } from "@/store/slices/auth";
 import {
-  User,
-  Target,
-  CheckCircle2,
-  ArrowRight,
   ArrowLeft,
-  Zap,
-  Heart,
-  TrendingUp,
+  ArrowRight,
   BookOpen,
+  CheckCircle2,
   Dumbbell,
-  Moon,
+  Heart,
   Mail,
+  Moon,
+  Target,
+  TrendingUp,
+  User,
+  Zap,
 } from "lucide-react";
+import { useState } from "react";
+import { useDispatch } from "react-redux";
 
 interface OnboardingFlowProps {
   onComplete: () => void;
@@ -544,7 +544,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
       </Card>
 
       {/* Skip onboarding link */}
-      {currentStep < 4 && (
+      {/* {currentStep < 4 && (
         <button
           type="button"
           onClick={onComplete}
@@ -552,7 +552,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         >
           Skip setup for now
         </button>
-      )}
+      )} */}
     </div>
   );
 }

@@ -207,7 +207,7 @@ export function PerformanceTracker() {
 
       {/* Content */}
       {filteredReviews.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12">
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
           <p className="text-muted-foreground">No reviews yet</p>
           <Button
             variant="link"

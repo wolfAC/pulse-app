@@ -107,7 +107,7 @@ export function BudgetTracker() {
       {/* ------------------------------------------------------------------ */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <PageHeader
-          title="Finance"
+          title="Budgets"
           description="Manage your budgets, transactions and savings"
         />
         <Button onClick={handleAdd} className="gap-2">
