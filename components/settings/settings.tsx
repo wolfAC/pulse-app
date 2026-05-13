@@ -34,7 +34,12 @@ import { Switch } from "@/components/ui/switch";
 import { currencies } from "@/lib/types/finance";
 import { RootState, store } from "@/store/index";
 import { AppState } from "@/store/rootReducer";
-import { setCurrency, setTheme, type Theme } from "@/store/slices/app";
+import {
+  setCurrency,
+  setPrimaryColor,
+  setTheme,
+  type Theme,
+} from "@/store/slices/app";
 import { logout, updatePin, updateProfile } from "@/store/slices/auth";
 import {
   Bell,
@@ -149,6 +154,15 @@ export function SettingsPage() {
   const handleThemeChange = (value: Theme) => {
     dispatch(setTheme(value));
     setNextTheme(value);
+    // Re-apply primary color after theme switch (CSS reload overrides inline styles)
+    setTimeout(() => {
+      const root = document.documentElement;
+      root.style.setProperty("--primary", primaryColor);
+      root.style.setProperty("--ring", primaryColor);
+      root.style.setProperty("--accent", primaryColor);
+      root.style.setProperty("--sidebar-primary", primaryColor);
+      root.style.setProperty("--chart-1", primaryColor);
+    }, 0);
   };
 
   const handleSaveProfile = () => {
@@ -212,6 +226,36 @@ export function SettingsPage() {
   const handleLogout = () => {
     dispatch(logout());
     router.push("/login");
+  };
+
+  // Add presets constant (above the component)
+  const colorPresets = [
+    { label: "Violet", value: "oklch(0.65 0.2 250)", ring: "#6366f1" },
+    { label: "Blue", value: "oklch(0.60 0.2 220)", ring: "#3b82f6" },
+    { label: "Cyan", value: "oklch(0.65 0.15 200)", ring: "#06b6d4" },
+    { label: "Green", value: "oklch(0.65 0.18 145)", ring: "#22c55e" },
+    { label: "Amber", value: "oklch(0.70 0.18 75)", ring: "#f59e0b" },
+    { label: "Rose", value: "oklch(0.60 0.22 15)", ring: "#f43f5e" },
+    { label: "Pink", value: "oklch(0.65 0.2 330)", ring: "#ec4899" },
+    { label: "Orange", value: "oklch(0.68 0.2 45)", ring: "#f97316" },
+  ];
+
+  // Add to redux selectors inside SettingsPage:
+  const primaryColor = useSelector(
+    (state: RootState) => state.app.primaryColor,
+  );
+
+  // Handler:
+  const handleColorChange = (oklchValue: string) => {
+    dispatch(setPrimaryColor(oklchValue));
+    // Apply immediately to CSS variables
+    const root = document.documentElement;
+    root.style.setProperty("--primary", oklchValue);
+    root.style.setProperty("--ring", oklchValue);
+    root.style.setProperty("--accent", oklchValue);
+    root.style.setProperty("--sidebar-primary", oklchValue);
+    root.style.setProperty("--sidebar-ring", oklchValue);
+    root.style.setProperty("--chart-1", oklchValue);
   };
 
   // ── render ────────────────────────────────────────────────────────────────
@@ -317,6 +361,45 @@ export function SettingsPage() {
             </SelectContent>
           </Select>
         </SettingsRow>
+
+        <Separator />
+
+        {/* Primary colour picker */}
+        <div className="space-y-3">
+          <div>
+            <Label>Primary Color</Label>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Accent colour used across the app
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2.5">
+            {colorPresets.map((preset) => {
+              const isActive = primaryColor === preset.value;
+              return (
+                <button
+                  key={preset.label}
+                  type="button"
+                  title={preset.label}
+                  onClick={() => handleColorChange(preset.value)}
+                  className="group relative size-8 rounded-full transition-transform hover:scale-110 focus:outline-none"
+                  style={{ backgroundColor: preset.ring }}
+                >
+                  {isActive && (
+                    <span className="absolute inset-0 rounded-full ring-2 ring-white ring-offset-2 ring-offset-background" />
+                  )}
+                  <span className="sr-only">{preset.label}</span>
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Current:{" "}
+            <span className="font-medium text-foreground">
+              {colorPresets.find((p) => p.value === primaryColor)?.label ??
+                "Custom"}
+            </span>
+          </p>
+        </div>
       </SettingsSection>
 
       {/* ── Notifications ────────────────────────────────────────────────── */}

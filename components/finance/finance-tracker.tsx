@@ -55,9 +55,11 @@ export function FinanceTracker() {
 
   // Derived stats (shown in the top summary card)
   const stats = useMemo(() => {
-    const monthTx = transactions.filter((tx) =>
-      tx.date.startsWith(currentMonth),
-    );
+    const monthTx = transactions.filter((tx) => {
+      const txMonth = new Date(tx.createdAt).toISOString().slice(0, 7);
+
+      return txMonth === currentMonth;
+    });
 
     const income = monthTx
       .filter((tx) => tx.type === "income")

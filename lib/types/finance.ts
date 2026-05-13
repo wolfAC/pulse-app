@@ -6,7 +6,6 @@ export interface Transaction {
   userEmail: "wolf8132609@gmail.com";
   amount: number;
   category: string;
-  date: string;
   note?: string;
   account?: string;
   bankName?: string;

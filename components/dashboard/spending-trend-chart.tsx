@@ -49,7 +49,11 @@ export function SpendingTrendChart() {
     });
 
     const data = months.map((month) => {
-      const monthTx = userTx.filter((tx) => tx.date.startsWith(month));
+      const monthTx = userTx.filter((tx) => {
+        const txMonth = new Date(tx.createdAt).toISOString().slice(0, 7);
+
+        return txMonth === month;
+      });
       const income = monthTx
         .filter((tx) => tx.type === "income")
         .reduce((s, tx) => s + tx.amount, 0);

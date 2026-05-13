@@ -38,7 +38,7 @@ const fmt = (n: number) =>
     maximumFractionDigits: 0,
   }).format(n);
 
-const fmtDate = (d: string) =>
+const fmtDate = (d: number) =>
   new Date(d).toLocaleDateString("en-IN", {
     day: "numeric",
     month: "short",
@@ -237,7 +237,7 @@ export function TransactionsSection({
                       {tx.counterParty || tx.note || tx.category}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {tx.category} · {fmtDate(tx.date)}
+                      {tx.category} · {fmtDate(tx.createdAt)}
                     </p>
                   </div>
                   <span

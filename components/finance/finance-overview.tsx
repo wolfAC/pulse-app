@@ -57,16 +57,21 @@ export function BudgetsOverview({
 
   const spentByCategory = useMemo(() => {
     const map: Record<string, number> = {};
+
     allTransactions
-      .filter(
-        (tx) =>
+      .filter((tx) => {
+        const txMonth = new Date(tx.createdAt).toISOString().slice(0, 7);
+
+        return (
           tx.userEmail === userEmail &&
           tx.type === "expense" &&
-          tx.date.startsWith(currentMonth),
-      )
+          txMonth === currentMonth
+        );
+      })
       .forEach((tx) => {
         map[tx.category] = (map[tx.category] ?? 0) + tx.amount;
       });
+
     return map;
   }, [allTransactions, userEmail, currentMonth]);
 

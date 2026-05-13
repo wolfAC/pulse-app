@@ -43,12 +43,23 @@ export default function BudgetAnalytics() {
       .toISOString()
       .slice(0, 7);
 
-    const thisMonthTx = transactions.filter((t) =>
-      t.date.startsWith(currentMonth),
-    );
-    const lastMonthTx = transactions.filter((t) =>
-      t.date.startsWith(prevMonth),
-    );
+    const thisMonthTx = transactions.filter((t) => {
+      const date = new Date(t.createdAt);
+      const month = `${date.getFullYear()}-${String(
+        date.getMonth() + 1,
+      ).padStart(2, "0")}`;
+
+      return month === currentMonth;
+    });
+
+    const lastMonthTx = transactions.filter((t) => {
+      const date = new Date(t.createdAt);
+      const month = `${date.getFullYear()}-${String(
+        date.getMonth() + 1,
+      ).padStart(2, "0")}`;
+
+      return month === prevMonth;
+    });
 
     const sum = (txs: typeof transactions, type: "income" | "expense") =>
       txs.filter((t) => t.type === type).reduce((s, t) => s + t.amount, 0);
@@ -93,14 +104,24 @@ export default function BudgetAnalytics() {
   // Category breakdown from user's transactions
   const categoryData = useMemo(() => {
     const currentMonth = new Date().toISOString().slice(0, 7);
+
     const map: Record<string, number> = {};
+
     transactions
-      .filter((t) => t.type === "expense" && t.date.startsWith(currentMonth))
+      .filter((t) => {
+        const txMonth = new Date(t.createdAt).toISOString().slice(0, 7);
+
+        return t.type === "expense" && txMonth === currentMonth;
+      })
       .forEach((t) => {
         map[t.category] = (map[t.category] ?? 0) + t.amount;
       });
+
     return Object.entries(map)
-      .map(([category, amount]) => ({ category, amount }))
+      .map(([category, amount]) => ({
+        category,
+        amount,
+      }))
       .sort((a, b) => b.amount - a.amount);
   }, [transactions]);
 

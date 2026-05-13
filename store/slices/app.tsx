@@ -7,6 +7,7 @@ interface AppState {
   sidebarOpen: boolean;
   appLocked: boolean;
   currency: string;
+  primaryColor: string;
 }
 
 const initialState: AppState = {
@@ -14,6 +15,7 @@ const initialState: AppState = {
   sidebarOpen: true,
   appLocked: false,
   currency: "INR",
+  primaryColor: "oklch(0.65 0.2 250)", // default violet
 };
 
 const appSlice = createSlice({
@@ -25,6 +27,9 @@ const appSlice = createSlice({
     },
     setCurrency(state, action: PayloadAction<string>) {
       state.currency = action.payload;
+    },
+    setPrimaryColor(state, action: PayloadAction<string>) {
+      state.primaryColor = action.payload;
     },
     toggleSidebar(state) {
       state.sidebarOpen = !state.sidebarOpen;
@@ -44,6 +49,7 @@ const appSlice = createSlice({
 export const {
   setTheme,
   setCurrency,
+  setPrimaryColor,
   toggleSidebar,
   setSidebarOpen,
   lockApp,

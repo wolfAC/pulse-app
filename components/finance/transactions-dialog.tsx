@@ -81,7 +81,6 @@ export function TransactionDialog({
         type: form.type,
         amount: parseFloat(form.amount),
         category: form.category,
-        date: form.date,
         note: form.note || undefined,
         counterParty: form.counterParty || undefined,
         source: "manual",

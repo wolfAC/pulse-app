@@ -45,24 +45,25 @@ const notifications = [
   },
 ];
 
-export function TopNavbar() {
+interface TopNavbarProps {
+  onSearchOpen: () => void;
+}
+
+export function TopNavbar({ onSearchOpen }: TopNavbarProps) {
   const dispatch = useDispatch();
   const router = useRouter();
   const isMobile = useIsMobile();
 
-  const [searchOpen, setSearchOpen] = useState(false);
-
-  // open on ⌘K
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
-        setSearchOpen(true);
+        onSearchOpen();
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, []);
+  }, [onSearchOpen]);
 
   const currentEmail = useSelector(
     (state: RootState) => state.auth.currentEmail,
@@ -102,7 +103,7 @@ export function TopNavbar() {
       <div className="flex-1">
         <Button
           variant="outline"
-          onClick={() => setSearchOpen(true)}
+          onClick={onSearchOpen}
           className="relative h-9 w-full max-w-sm justify-start text-sm text-muted-foreground sm:w-64 md:w-80"
         >
           <Search className="mr-2 size-4" />
@@ -112,8 +113,6 @@ export function TopNavbar() {
             <Command className="size-3" />K
           </kbd>
         </Button>
-
-        <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
       </div>
 
       <div className="flex items-center gap-2">

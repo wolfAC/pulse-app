@@ -16,7 +16,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-// ── types ─────────────────────────────────────────────────────────────────────
 type Category = "Finance" | "Goals" | "Health" | "Performance";
 
 interface SearchResult {
@@ -28,34 +27,36 @@ interface SearchResult {
   badgeColor?: string;
 }
 
-// ── category config ───────────────────────────────────────────────────────────
 const categoryConfig: Record<
   Category,
-  { icon: React.ElementType; color: string; bg: string }
+  { icon: React.ElementType; color: string; bg: string; headerBg: string }
 > = {
   Finance: {
     icon: DollarSign,
-    color: "text-emerald-400",
-    bg: "bg-emerald-400/10",
+    color: "text-emerald-500",
+    bg: "bg-emerald-500/15",
+    headerBg: "bg-emerald-500/8",
   },
   Goals: {
     icon: Target,
-    color: "text-violet-400",
-    bg: "bg-violet-400/10",
+    color: "text-violet-500",
+    bg: "bg-violet-500/15",
+    headerBg: "bg-violet-500/8",
   },
   Health: {
     icon: Heart,
-    color: "text-rose-400",
-    bg: "bg-rose-400/10",
+    color: "text-rose-500",
+    bg: "bg-rose-500/15",
+    headerBg: "bg-rose-500/8",
   },
   Performance: {
     icon: Star,
-    color: "text-amber-400",
-    bg: "bg-amber-400/10",
+    color: "text-amber-500",
+    bg: "bg-amber-500/15",
+    headerBg: "bg-amber-500/8",
   },
 };
 
-// ── props ─────────────────────────────────────────────────────────────────────
 interface GlobalSearchProps {
   open: boolean;
   onClose: () => void;
@@ -79,9 +80,7 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
   const savingsGoals = useSelector(
     (state: RootState) => state.finance.savingsGoals ?? [],
   );
-  const goals = useSelector((state: RootState) =>
-    (state.goals.goals ?? []).filter((g) => g.userEmail === currentEmail),
-  );
+  const goals = useSelector((state: RootState) => state.goals.goals ?? []);
   const workouts = useSelector(
     (state: RootState) => state.health.workouts ?? [],
   );
@@ -89,26 +88,29 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
     (state: RootState) => state.performance.reviews ?? [],
   );
 
-  // ── build flat searchable corpus ───────────────────────────────────────────
+  const userGoals = useMemo(
+    () => goals.filter((g) => g.userEmail === currentEmail),
+    [goals, currentEmail],
+  );
+
+  // ── corpus ────────────────────────────────────────────────────────────────
   const corpus = useMemo<SearchResult[]>(() => {
     const items: SearchResult[] = [];
 
-    // Transaction — type, amount, category, date, note, counterParty, tags
     transactions.forEach((tx) =>
       items.push({
         id: `tx-${tx.id}`,
         title: tx.counterParty
           ? `${tx.counterParty} · ${tx.category}`
           : tx.category,
-        subtitle: `${tx.type === "expense" ? "-" : "+"}₹${tx.amount} · ${tx.date}${tx.note ? ` · ${tx.note}` : ""}`,
+        subtitle: `${tx.type === "expense" ? "-" : "+"}₹${tx.amount} · ${tx.createdAt}${tx.note ? ` · ${tx.note}` : ""}`,
         category: "Finance",
-        badge: tx.category,
+        badge: tx.type === "expense" ? "Expense" : "Income",
         badgeColor:
-          tx.type === "expense" ? "text-rose-400" : "text-emerald-400",
+          tx.type === "expense" ? "text-rose-500" : "text-emerald-500",
       }),
     );
 
-    // Budget — category, limit, month (no `spent` field on type)
     budgets.forEach((b) =>
       items.push({
         id: `bgt-${b.id}`,
@@ -119,7 +121,6 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
       }),
     );
 
-    // SavingsGoal — title, targetAmount, currentAmount, deadline
     savingsGoals.forEach((sg) =>
       items.push({
         id: `sg-${sg.id}`,
@@ -130,8 +131,7 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
       }),
     );
 
-    // Goal — title, description, progress, priority, status, dueDate
-    goals.forEach((g) =>
+    userGoals.forEach((g) =>
       items.push({
         id: `goal-${g.id}`,
         title: g.title,
@@ -141,7 +141,6 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
       }),
     );
 
-    // Workout — type, name, duration, caloriesBurned, distance
     workouts.forEach((w) =>
       items.push({
         id: `wkt-${w.id}`,
@@ -152,36 +151,37 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
       }),
     );
 
-    // Review — period, overallScore, metrics (no `title` field on type)
     reviews.forEach((r) =>
       items.push({
         id: `rev-${r.id}`,
         title: `${r.period.charAt(0).toUpperCase() + r.period.slice(1)} Review`,
-        subtitle: `Score ${r.overallScore}/100 · P:${r.metrics.productivity} Q:${r.metrics.quality} C:${r.metrics.communication} L:${r.metrics.learning}`,
+        subtitle: `Score ${r.overallScore}/100 · Productivity ${r.metrics.productivity} · Quality ${r.metrics.quality}`,
         category: "Performance",
         badge: `${r.overallScore}%`,
       }),
     );
 
     return items;
-  }, [transactions, budgets, savingsGoals, goals, workouts, reviews]);
+  }, [transactions, budgets, savingsGoals, userGoals, workouts, reviews]);
 
-  // ── fast-fuzzy searcher ───────────────────────────────────────────────────
+  // ── fuzzy ─────────────────────────────────────────────────────────────────
   const searcher = useMemo(
     () =>
-      new Searcher(corpus, {
-        keySelector: (item) => `${item.title} ${item.subtitle}`,
-        threshold: 0.6,
-      }),
+      corpus.length > 0
+        ? new Searcher(corpus, {
+            keySelector: (item) => `${item.title} ${item.subtitle}`,
+            threshold: 0.6,
+          })
+        : null,
     [corpus],
   );
 
   const results = useMemo<SearchResult[]>(() => {
-    if (!query.trim()) return corpus.slice(0, 20);
+    if (!query.trim()) return corpus.slice(0, 24);
+    if (!searcher) return [];
     return searcher.search(query).slice(0, 30);
   }, [query, corpus, searcher]);
 
-  // ── group by category ─────────────────────────────────────────────────────
   const grouped = useMemo(() => {
     const map = new Map<Category, SearchResult[]>();
     for (const r of results) {
@@ -192,7 +192,7 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
     return map;
   }, [results]);
 
-  // ── keyboard nav ──────────────────────────────────────────────────────────
+  // ── keyboard ──────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => {
@@ -205,7 +205,6 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
     return () => window.removeEventListener("keydown", handler);
   }, [open, results.length, onClose]);
 
-  // ── focus on open ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (open) {
       setTimeout(() => inputRef.current?.focus(), 50);
@@ -219,19 +218,21 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
   let globalIdx = 0;
 
   return (
-    <div
-      className="fixed inset-0 z-100 flex flex-col items-center pt-16 px-4"
-      style={{
-        background: "rgba(0,0,0,0.55)",
-        backdropFilter: "blur(8px)",
-        WebkitBackdropFilter: "blur(8px)",
-      }}
-      onMouseDown={(e) => e.target === e.currentTarget && onClose()}
-    >
-      {/* search box */}
-      <div className="w-full max-w-2xl">
-        <div className="relative flex items-center rounded-2xl border border-white/10 bg-white/5 shadow-2xl ring-1 ring-white/5">
-          <Search className="ml-4 size-5 shrink-0 text-muted-foreground" />
+    <>
+      {/* Backdrop — matches Dialog overlay */}
+      <div className="fixed inset-0 z-200 bg-black/50" onClick={onClose} />
+
+      {/* Panel — mirrors DialogContent: centered, rounded, shadow, border */}
+      <div
+        className="fixed left-1/2 top-[10%] z-201 w-full -translate-x-1/2
+                   sm:max-w-lg md:max-w-xl
+                   flex flex-col overflow-hidden rounded-xl border border-border
+                   bg-popover shadow-xl"
+        style={{ maxHeight: "78dvh" }}
+      >
+        {/* ── DialogHeader equivalent — search input ────────────────────── */}
+        <div className="flex shrink-0 items-center gap-3 border-b border-border px-4">
+          <Search className="size-4 shrink-0 text-muted-foreground" />
           <input
             ref={inputRef}
             value={query}
@@ -240,24 +241,48 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
               setActiveIndex(0);
             }}
             placeholder="Search transactions, goals, workouts…"
-            className="flex-1 bg-transparent px-3 py-4 text-base text-foreground placeholder:text-muted-foreground/60 outline-none"
+            className="flex-1 min-w-0 bg-transparent py-3.5 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none"
           />
-          {query && (
-            <button
-              onClick={() => setQuery("")}
-              className="mr-2 rounded-md p-1 text-muted-foreground hover:text-foreground"
-            >
-              <X className="size-4" />
-            </button>
-          )}
-          <kbd className="mr-4 hidden rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline">
-            ESC
-          </kbd>
+          {/* Close button — mirrors Dialog's X button */}
+          <button
+            onClick={onClose}
+            className="shrink-0 rounded-sm p-1 text-muted-foreground opacity-70 hover:opacity-100 transition-opacity ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          >
+            <X className="size-4" />
+            <span className="sr-only">Close</span>
+          </button>
         </div>
 
-        {/* results panel */}
+        {/* ── Body — results / empty states ─────────────────────────────── */}
+
+        {/* Empty corpus */}
+        {corpus.length === 0 && (
+          <div className="px-6 py-10 text-center">
+            <Search className="mx-auto mb-3 size-8 text-muted-foreground/25" />
+            <p className="text-sm font-medium text-foreground">No data yet</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Add transactions, goals, or workouts to search them here.
+            </p>
+          </div>
+        )}
+
+        {/* No match */}
+        {corpus.length > 0 && query.trim() !== "" && results.length === 0 && (
+          <div className="px-6 py-10 text-center">
+            <Search className="mx-auto mb-3 size-8 text-muted-foreground/25" />
+            <p className="text-sm font-medium text-foreground">
+              No results found
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              No results for{" "}
+              <span className="font-semibold text-foreground">"{query}"</span>
+            </p>
+          </div>
+        )}
+
+        {/* Results */}
         {results.length > 0 && (
-          <div className="mt-3 max-h-[60vh] overflow-y-auto rounded-2xl border border-white/10 bg-background/80 shadow-2xl backdrop-blur-xl">
+          <div className="overflow-y-auto overscroll-contain">
             {(["Finance", "Goals", "Health", "Performance"] as Category[]).map(
               (cat) => {
                 const items = grouped.get(cat);
@@ -266,54 +291,72 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
 
                 return (
                   <div key={cat}>
-                    {/* category header */}
-                    <div className="flex items-center gap-2 px-4 py-2 border-b border-white/5">
-                      <div className={cn("rounded-md p-1", bg)}>
-                        <Icon className={cn("size-3.5", color)} />
+                    {/* Category header */}
+                    <div className="sticky top-0 z-10 flex items-center gap-2 border-b border-border bg-muted/50 px-4 py-2 backdrop-blur-sm">
+                      <div
+                        className={cn(
+                          "flex items-center justify-center rounded-md p-1",
+                          bg,
+                        )}
+                      >
+                        <Icon className={cn("size-3", color)} />
                       </div>
-                      <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                      <span
+                        className={cn(
+                          "text-[10px] font-bold uppercase tracking-widest",
+                          color,
+                        )}
+                      >
                         {cat}
                       </span>
-                      <span className="ml-auto text-xs text-muted-foreground/50">
+                      <span className="ml-auto rounded-full bg-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
                         {items.length}
                       </span>
                     </div>
 
-                    {/* items */}
+                    {/* Result rows */}
                     {items.map((item) => {
                       const idx = globalIdx++;
                       const isActive = idx === activeIndex;
+
                       return (
                         <div
                           key={item.id}
                           onMouseEnter={() => setActiveIndex(idx)}
                           className={cn(
-                            "flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors",
-                            isActive ? "bg-white/8" : "hover:bg-white/5",
+                            "flex cursor-pointer items-center gap-3 border-b border-border/40 px-4 py-3 last:border-0 transition-colors",
+                            isActive ? "bg-accent/10" : "hover:bg-muted/40",
                           )}
                         >
-                          <div className={cn("rounded-lg p-1.5 shrink-0", bg)}>
-                            <Icon className={cn("size-4", color)} />
-                          </div>
+                          {/* Category dot */}
+                          <div
+                            className={cn(
+                              "mt-1 size-1.5 shrink-0 self-start rounded-full",
+                              bg.replace("/15", "/70"),
+                            )}
+                          />
+
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-medium text-foreground">
+                            <p className="truncate text-sm font-medium text-foreground leading-snug">
                               {item.title}
                             </p>
-                            <p className="truncate text-xs text-muted-foreground">
+                            <p className="truncate text-xs text-muted-foreground mt-0.5 leading-snug">
                               {item.subtitle}
                             </p>
                           </div>
+
                           {item.badge && (
                             <Badge
                               variant="secondary"
                               className={cn(
-                                "shrink-0 text-[10px]",
+                                "hidden sm:inline-flex shrink-0 text-[10px] font-medium",
                                 item.badgeColor,
                               )}
                             >
                               {item.badge}
                             </Badge>
                           )}
+
                           <ArrowRight
                             className={cn(
                               "size-3.5 shrink-0 text-muted-foreground/30 transition-opacity",
@@ -327,33 +370,33 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
                 );
               },
             )}
-
-            {/* footer hint */}
-            <div className="flex items-center gap-4 border-t border-white/5 px-4 py-2.5 text-[10px] text-muted-foreground/50">
-              <span>
-                <kbd className="font-mono">↑↓</kbd> navigate
-              </span>
-              <span>
-                <kbd className="font-mono">↵</kbd> open
-              </span>
-              <span>
-                <kbd className="font-mono">ESC</kbd> close
-              </span>
-              <span className="ml-auto">{results.length} results</span>
-            </div>
           </div>
         )}
 
-        {/* empty state */}
-        {query && results.length === 0 && (
-          <div className="mt-3 rounded-2xl border border-white/10 bg-background/80 px-4 py-10 text-center backdrop-blur-xl">
-            <Search className="mx-auto mb-3 size-8 text-muted-foreground/30" />
-            <p className="text-sm text-muted-foreground">
-              No results for <span className="text-foreground">"{query}"</span>
-            </p>
+        {/* ── DialogFooter equivalent ───────────────────────────────────── */}
+        <div className="flex shrink-0 items-center justify-between border-t border-border bg-muted/30 px-4 py-2">
+          <div className="hidden sm:flex items-center gap-3 text-[10px] text-muted-foreground/60">
+            <span>
+              <kbd className="font-mono rounded bg-border px-1 py-0.5">↑↓</kbd>{" "}
+              navigate
+            </span>
+            <span>
+              <kbd className="font-mono rounded bg-border px-1 py-0.5">↵</kbd>{" "}
+              open
+            </span>
+            <span>
+              <kbd className="font-mono rounded bg-border px-1 py-0.5">ESC</kbd>{" "}
+              close
+            </span>
           </div>
-        )}
+          <span className="sm:hidden text-[10px] text-muted-foreground/60">
+            Tap a result to open
+          </span>
+          <span className="text-[10px] text-muted-foreground/60">
+            {results.length} result{results.length !== 1 ? "s" : ""}
+          </span>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
