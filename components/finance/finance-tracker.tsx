@@ -9,11 +9,12 @@ import { LayoutGrid, List, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { BudgetDialog } from "./budget-dialog";
-import { TransactionDialog } from "./transactions-dialog";
-import { BudgetsOverview } from "./finance-overview";
-import { TransactionsSection } from "./finance-transaction";
-import { SavingsSection } from "./finance-savings";
 import BudgetAnalytics from "./finance-analytics";
+import { BudgetsOverview } from "./finance-overview";
+import { SavingsSection } from "./finance-savings";
+import { TransactionsSection } from "./finance-transaction";
+import { StatementImportDialog } from "./statement-import-dialog";
+import { TransactionDialog } from "./transactions-dialog";
 
 export function FinanceTracker() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -22,6 +23,7 @@ export function FinanceTracker() {
   // Dialog state — only one dialog open at a time
   const [budgetDialogOpen, setBudgetDialogOpen] = useState(false);
   const [txDialogOpen, setTxDialogOpen] = useState(false);
+  const [stDialogOpen, setStDialogOpen] = useState(false);
 
   const currentEmail = useSelector(
     (state: RootState) => state.auth.currentEmail,
@@ -180,7 +182,7 @@ export function FinanceTracker() {
         <TransactionsSection
           viewMode={viewMode}
           userEmail={currentEmail}
-          onAddTransaction={() => setTxDialogOpen(true)}
+          onImportTransaction={() => setStDialogOpen(true)}
         />
       )}
       {activeTab === "savings" && (
@@ -197,6 +199,10 @@ export function FinanceTracker() {
         onOpenChange={setBudgetDialogOpen}
       />
       <TransactionDialog open={txDialogOpen} onOpenChange={setTxDialogOpen} />
+      <StatementImportDialog
+        open={stDialogOpen}
+        onOpenChange={setStDialogOpen}
+      />
     </div>
   );
 }

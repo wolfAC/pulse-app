@@ -11,7 +11,7 @@ export interface Transaction {
   bankName?: string;
   counterParty?: string;
   tags?: string[];
-  source?: "manual" | "gpay-pdf";
+  source?: "manual" | "import";
   createdAt: number;
 }
 

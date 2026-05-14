@@ -23,7 +23,7 @@ import {
   ArrowDownRight,
   ArrowUpRight,
   Filter,
-  Plus,
+  Download,
   Search,
   Trash2,
 } from "lucide-react";
@@ -48,13 +48,13 @@ const fmtDate = (d: number) =>
 interface TransactionsSectionProps {
   viewMode: string;
   userEmail: string | null;
-  onAddTransaction: () => void;
+  onImportTransaction: () => void;
 }
 
 export function TransactionsSection({
   viewMode,
   userEmail,
-  onAddTransaction,
+  onImportTransaction,
 }: TransactionsSectionProps) {
   const dispatch = useDispatch();
   const allTransactions = useSelector(
@@ -194,9 +194,9 @@ export function TransactionsSection({
                 {filtered.length !== 1 ? "s" : ""} found
               </CardDescription>
             </div>
-            <Button size="sm" variant="outline" onClick={onAddTransaction}>
-              <Plus className="mr-1 h-3.5 w-3.5" />
-              Add
+            <Button size="sm" variant="outline" onClick={onImportTransaction}>
+              <Download className="mr-1 h-3.5 w-3.5" />
+              Import
             </Button>
           </div>
         </CardHeader>

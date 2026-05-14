@@ -6,6 +6,7 @@ const nextConfig: import("next").NextConfig = {
   images: {
     unoptimized: true,
   },
+  turbopack: {},
 };
 
 export default nextConfig;
