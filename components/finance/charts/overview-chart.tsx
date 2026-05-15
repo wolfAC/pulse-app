@@ -31,14 +31,26 @@ export function OverviewChart({
     return Array.from({ length: 6 }, (_, i) => {
       const d = new Date();
       d.setMonth(d.getMonth() - (5 - i));
+
       const month = d.toISOString().slice(0, 7);
-      const label = d.toLocaleString("en-IN", { month: "short" });
-      const monthTx = transactions.filter((t) => t.date.startsWith(month));
+
+      const label = d.toLocaleString("en-IN", {
+        month: "short",
+      });
+
+      const monthTx = transactions.filter((t) => {
+        const txMonth = new Date(t.createdAt).toISOString().slice(0, 7);
+
+        return txMonth === month;
+      });
+
       return {
         month: label,
+
         income: monthTx
           .filter((t) => t.type === "income")
           .reduce((s, t) => s + t.amount, 0),
+
         expenses: monthTx
           .filter((t) => t.type === "expense")
           .reduce((s, t) => s + t.amount, 0),

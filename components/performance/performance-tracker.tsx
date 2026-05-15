@@ -9,22 +9,18 @@ import { cn } from "@/lib/utils";
 import { LayoutGrid, List, Plus, TrendingUp } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  addReview,
-  updateReview,
-  deleteReview,
-} from "@/store/slices/performance";
+import { useRouter } from "next/navigation";
+import { deleteReview } from "@/store/slices/performance";
 import { RadialScore } from "./radial-score";
 import { ReviewCard } from "./review-card";
-import { ReviewDialog } from "./review-dialog";
 import { RootState } from "@/store";
 
 type FilterType = "all" | ReviewPeriod;
 
 export function PerformanceTracker() {
   const dispatch = useDispatch();
+  const router = useRouter();
 
-  // ── current user — same pattern as GoalsTracker ──────────────────────────
   const currentEmail = useSelector(
     (state: RootState) => state.auth.currentEmail,
   );
@@ -32,15 +28,12 @@ export function PerformanceTracker() {
     (state: RootState) => state.performance.reviews ?? [],
   );
 
-  // only this user's reviews
   const reviews = useMemo(
     () => allReviews.filter((r) => r.userEmail === currentEmail),
     [allReviews, currentEmail],
   );
 
   const [filter, setFilter] = useState<FilterType>("all");
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingReview, setEditingReview] = useState<Review | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   const filteredReviews = useMemo(
@@ -65,42 +58,8 @@ export function PerformanceTracker() {
     return sorted[0].overallScore - sorted[1].overallScore;
   })();
 
-  type ReviewInput = Omit<Review, "id" | "overallScore">;
-
-  const handleSave = (reviewData: ReviewInput) => {
-    const overallScore = Math.round(
-      (reviewData.metrics.productivity +
-        reviewData.metrics.quality +
-        reviewData.metrics.communication +
-        reviewData.metrics.learning) /
-        4,
-    );
-
-    if (editingReview) {
-      dispatch(
-        updateReview({
-          ...reviewData,
-          id: editingReview.id,
-          overallScore,
-        }),
-      );
-    } else {
-      dispatch(
-        addReview({
-          ...reviewData,
-          id: crypto.randomUUID(),
-          userEmail: currentEmail!, // ── stamp the owner
-          overallScore,
-        }),
-      );
-    }
-
-    setEditingReview(null);
-  };
-
   const handleEdit = (review: Review) => {
-    setEditingReview(review);
-    setDialogOpen(true);
+    router.push(`/performance/review/edit/${review.id}`);
   };
 
   const handleDelete = (id: string) => {
@@ -115,10 +74,7 @@ export function PerformanceTracker() {
           description="Track and reflect on your work performance"
         />
         <Button
-          onClick={() => {
-            setEditingReview(null);
-            setDialogOpen(true);
-          }}
+          onClick={() => router.push("/performance/review/add")}
           className="gap-2"
         >
           <Plus className="h-4 w-4" />
@@ -222,10 +178,7 @@ export function PerformanceTracker() {
             <p className="text-muted-foreground mb-4">No reviews found</p>
             <Button
               variant="link"
-              onClick={() => {
-                setEditingReview(null);
-                setDialogOpen(true);
-              }}
+              onClick={() => router.push("/performance/review/add")}
             >
               Create your first review
             </Button>
@@ -249,13 +202,6 @@ export function PerformanceTracker() {
           ))}
         </div>
       )}
-
-      <ReviewDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        review={editingReview}
-        onSave={handleSave}
-      />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
@@ -8,13 +9,12 @@ import { RootState } from "@/store/index";
 import { LayoutGrid, List, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useSelector } from "react-redux";
-import { HealthDialog } from "./health-dialog";
 import { HealthLogs } from "./health-logs";
 import { HealthOverview } from "./health-overview";
 import { WorkoutsSection } from "./workouts-section";
 
 export function HealthTracker() {
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("overview");
   const [viewMode, setViewMode] = useState("grid");
 
@@ -28,7 +28,6 @@ export function HealthTracker() {
     (state: RootState) => state.health.workouts ?? [],
   );
 
-  // Scope to current user
   const entries = useMemo(
     () => allEntries.filter((e) => e.userEmail === currentEmail),
     [allEntries, currentEmail],
@@ -38,7 +37,6 @@ export function HealthTracker() {
     [allWorkouts, currentEmail],
   );
 
-  // Derived stats
   const stats = useMemo(() => {
     const getLatest = (type: string) =>
       entries
@@ -56,7 +54,6 @@ export function HealthTracker() {
 
     const latestCalories = getLatest("calories");
     const latestSleep = getLatest("sleep");
-
     const now = Date.now();
     const workoutsThisWeek = workouts.filter((w) => {
       const diff = (now - w.createdAt) / (1000 * 60 * 60 * 24);
@@ -75,19 +72,20 @@ export function HealthTracker() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <PageHeader
           title="Health Tracker"
           description="Monitor your daily health metrics and workouts"
         />
-        <Button onClick={() => setDialogOpen(true)} className="gap-2">
+        <Button
+          onClick={() => router.push("/health/entry/add")}
+          className="gap-2"
+        >
           <Plus className="h-4 w-4" />
           Add Entry
         </Button>
       </div>
 
-      {/* Stats */}
       <Card>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 px-6 pb-3">
           <Stat label="Avg Steps" value={stats.avgSteps} />
@@ -97,7 +95,6 @@ export function HealthTracker() {
         </div>
       </Card>
 
-      {/* Tabs + View toggle */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
@@ -134,8 +131,6 @@ export function HealthTracker() {
       )}
       {activeTab === "logs" && <HealthLogs userEmail={currentEmail} />}
       {activeTab === "workouts" && <WorkoutsSection userEmail={currentEmail} />}
-
-      <HealthDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </div>
   );
 }

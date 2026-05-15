@@ -1,5 +1,4 @@
 "use client";
-
 import { cn } from "@/lib/utils";
 
 interface RadialScoreProps {
@@ -7,6 +6,7 @@ interface RadialScoreProps {
   size?: "sm" | "md" | "lg";
   showLabel?: boolean;
   className?: string;
+  color?: string; // e.g. "text-emerald-400 stroke-emerald-400"
 }
 
 export function RadialScore({
@@ -14,6 +14,7 @@ export function RadialScore({
   size = "md",
   showLabel = true,
   className,
+  color,
 }: RadialScoreProps) {
   const sizeConfig = {
     sm: { width: 48, stroke: 4, fontSize: "text-xs" },
@@ -32,6 +33,9 @@ export function RadialScore({
     if (score >= 40) return "text-yellow-500 stroke-yellow-500";
     return "text-destructive stroke-destructive";
   };
+
+  const resolvedColor = color ?? getScoreColor(score);
+  const textColor = resolvedColor.split(" ")[0]; // e.g. "text-emerald-400"
 
   return (
     <div
@@ -63,16 +67,12 @@ export function RadialScore({
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={offset}
-          className={cn("transition-all duration-500", getScoreColor(score))}
+          className={cn("transition-all duration-500", resolvedColor)}
         />
       </svg>
       {showLabel && (
         <span
-          className={cn(
-            "absolute font-semibold",
-            config.fontSize,
-            getScoreColor(score).split(" ")[0],
-          )}
+          className={cn("absolute font-semibold", config.fontSize, textColor)}
         >
           {score}
         </span>

@@ -14,16 +14,17 @@ import { BudgetsOverview } from "./finance-overview";
 import { SavingsSection } from "./finance-savings";
 import { TransactionsSection } from "./finance-transaction";
 import { StatementImportDialog } from "./statement-import-dialog";
-import { TransactionDialog } from "./transactions-dialog";
+import { useRouter } from "next/navigation";
 
 export function FinanceTracker() {
   const [activeTab, setActiveTab] = useState("overview");
   const [viewMode, setViewMode] = useState("grid");
 
   // Dialog state — only one dialog open at a time
-  const [budgetDialogOpen, setBudgetDialogOpen] = useState(false);
-  const [txDialogOpen, setTxDialogOpen] = useState(false);
+
   const [stDialogOpen, setStDialogOpen] = useState(false);
+
+  const router = useRouter();
 
   const currentEmail = useSelector(
     (state: RootState) => state.auth.currentEmail,
@@ -92,9 +93,10 @@ export function FinanceTracker() {
 
   // CTA button changes per tab
   const handleAdd = () => {
-    if (activeTab === "overview") setBudgetDialogOpen(true);
-    else if (activeTab === "transactions") setTxDialogOpen(true);
-    else setBudgetDialogOpen(true); // savings uses its own inline button
+    if (activeTab === "overview") router.push("/finance/budget/add");
+    else if (activeTab === "transactions")
+      router.push("/finance/transaction/add");
+    else router.push("/finance/savings/add");
   };
 
   const addLabel =
@@ -175,7 +177,7 @@ export function FinanceTracker() {
         <BudgetsOverview
           viewMode={viewMode}
           userEmail={currentEmail}
-          onAddBudget={() => setBudgetDialogOpen(true)}
+          onAddBudget={() => router.push("/finance/budget/add")}
         />
       )}
       {activeTab === "transactions" && (
@@ -194,11 +196,7 @@ export function FinanceTracker() {
       {/* ------------------------------------------------------------------ */}
       {/* Dialogs                                                              */}
       {/* ------------------------------------------------------------------ */}
-      <BudgetDialog
-        open={budgetDialogOpen}
-        onOpenChange={setBudgetDialogOpen}
-      />
-      <TransactionDialog open={txDialogOpen} onOpenChange={setTxDialogOpen} />
+
       <StatementImportDialog
         open={stDialogOpen}
         onOpenChange={setStDialogOpen}

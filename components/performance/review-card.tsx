@@ -11,15 +11,19 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import {
   ChevronDown,
   ChevronUp,
-  MoreHorizontal,
   Pencil,
   Trash2,
   Zap,
@@ -55,51 +59,77 @@ export function ReviewCard({ review, onEdit, onDelete }: ReviewCardProps) {
     return formatDate(dateValue, { includeWeekday: true, includeYear: true });
   };
 
-  const getPeriodColor = (period: string) => {
-    switch (period) {
-      case "daily":
-        return "bg-primary/20 text-primary border-primary/30";
-      case "weekly":
-        return "bg-accent/20 text-accent border-accent/30";
-      case "monthly":
-        return "bg-purple-500/20 text-purple-400 border-purple-500/30";
-      default:
-        return "bg-secondary text-secondary-foreground";
+  const periodStyles: Record<
+    string,
+    {
+      period: string;
+      score: string;
+      indicator: string;
+      radialColor: string;
+      progressColor: string;
     }
+  > = {
+    daily: {
+      period: "bg-primary/20 text-primary border-primary/30",
+      score: "bg-primary/10 text-primary/80 border-primary/20",
+      indicator: "from-primary via-primary/70 to-primary/30",
+      radialColor: "text-primary stroke-primary",
+      progressColor: "[&>div]:bg-primary",
+    },
+    weekly: {
+      period: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+      score: "bg-emerald-500/10 text-emerald-300 border-emerald-400/30",
+      indicator: "from-emerald-500 via-emerald-400 to-emerald-500/50",
+      radialColor: "text-emerald-400 stroke-emerald-400",
+      progressColor: "[&>div]:bg-emerald-500",
+    },
+    monthly: {
+      period: "bg-purple-500/20 text-purple-400 border-purple-500/30",
+      score: "bg-purple-500/10 text-purple-300 border-purple-400/30",
+      indicator: "from-purple-500 via-purple-400 to-purple-500/50",
+      radialColor: "text-purple-400 stroke-purple-400",
+      progressColor: "[&>div]:bg-purple-500",
+    },
   };
 
-  const getScoreBadgeColor = (score: number) => {
-    if (score >= 80) return "bg-accent/20 text-accent border-accent/30";
-    if (score >= 60) return "bg-primary/20 text-primary border-primary/30";
-    if (score >= 40)
-      return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
-    return "bg-destructive/20 text-destructive border-destructive/30";
+  const styles = periodStyles[review.period] ?? {
+    period: "bg-secondary text-secondary-foreground border-border",
+    score: "bg-secondary text-secondary-foreground border-border",
+    indicator: "from-primary via-accent to-primary/50",
+    radialColor: "text-primary stroke-primary",
+    progressColor: "[&>div]:bg-primary",
   };
 
   return (
     <Card className="group relative overflow-hidden transition-all hover:border-primary/50">
       {/* Timeline indicator */}
-      <div className="absolute left-0 top-0 bottom-0 w-1 bg-linear-to-b from-primary via-accent to-primary/50" />
+      <div
+        className={cn(
+          "absolute left-0 top-0 bottom-0 w-1 bg-linear-to-b",
+          styles.indicator,
+        )}
+      />
 
       <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
         <CardHeader className="pb-3 pl-5">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-3">
-              <RadialScore score={review.overallScore} size="md" />
+              <RadialScore
+                score={review.overallScore}
+                size="md"
+                color={styles.radialColor}
+              />
               <div className="space-y-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge
                     variant="outline"
-                    className={cn("text-xs", getPeriodColor(review.period))}
+                    className={cn("text-xs", styles.period)}
                   >
                     {periodLabels[review.period]}
                   </Badge>
                   <Badge
                     variant="outline"
-                    className={cn(
-                      "text-xs",
-                      getScoreBadgeColor(review.overallScore),
-                    )}
+                    className={cn("text-xs", styles.score)}
                   >
                     Score: {review.overallScore}
                   </Badge>
@@ -112,6 +142,48 @@ export function ReviewCard({ review, onEdit, onDelete }: ReviewCardProps) {
             </div>
 
             <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                onClick={() => onEdit(review)}
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                <span className="sr-only">Edit review</span>
+              </Button>
+
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    <span className="sr-only">Delete review</span>
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete review?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This {periodLabels[review.period].toLowerCase()} review
+                      from {formatReviewDate(review.createdAt)} will be
+                      permanently deleted.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      onClick={() => onDelete(review.id)}
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+
               <CollapsibleTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
                   {isExpanded ? (
@@ -121,26 +193,6 @@ export function ReviewCard({ review, onEdit, onDelete }: ReviewCardProps) {
                   )}
                 </Button>
               </CollapsibleTrigger>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => onEdit(review)}>
-                    <Pencil className="mr-2 h-4 w-4" />
-                    Edit
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => onDelete(review.id)}
-                    className="text-destructive focus:text-destructive"
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
             </div>
           </div>
 
@@ -157,7 +209,10 @@ export function ReviewCard({ review, onEdit, onDelete }: ReviewCardProps) {
                     <Icon className="h-3.5 w-3.5" />
                     <span>{metricLabels[key]}</span>
                   </div>
-                  <Progress value={value} className="h-1.5" />
+                  <Progress
+                    value={value}
+                    className={cn("h-1.5", styles.progressColor)}
+                  />
                   <span className="text-xs font-medium">{value}%</span>
                 </div>
               );

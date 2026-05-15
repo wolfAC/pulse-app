@@ -3,22 +3,21 @@
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { Goal, GoalStatus } from "@/lib/types/goal";
+import type { Goal } from "@/lib/types/goal";
 import { RootState } from "@/store/index";
-import { addGoal, deleteGoal, updateGoal } from "@/store/slices/goals";
+import { deleteGoal } from "@/store/slices/goals";
 import { LayoutGrid, List, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { GoalCard } from "./goal-card";
-import { GoalDetailsSheet } from "./goal-details-sheet";
-import { GoalDialog } from "./goal-dialog";
 import { Card, CardContent } from "../ui/card";
+import { GoalCard } from "./goal-card";
 
 type TabValue = "active" | "completed" | "all";
 
 export function GoalsTracker() {
   const dispatch = useDispatch();
-
+  const router = useRouter();
   const currentEmail = useSelector(
     (state: RootState) => state.auth.currentEmail,
   );
@@ -31,53 +30,14 @@ export function GoalsTracker() {
 
   const [activeTab, setActiveTab] = useState<TabValue>("active");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
-  const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
-  const [detailsOpen, setDetailsOpen] = useState(false);
 
   const filteredGoals = useMemo(() => {
     if (activeTab === "all") return goals;
     return goals.filter((goal) => goal.status === activeTab);
   }, [goals, activeTab]);
 
-  const calculateProgress = (goal: Goal): number => {
-    const totalItems = goal.milestones.length + goal.tasks.length;
-    if (totalItems === 0) return goal.progress;
-    const completedItems =
-      goal.milestones.filter((m) => m.completed).length +
-      goal.tasks.filter((t) => t.completed).length;
-    return Math.round((completedItems / totalItems) * 100);
-  };
-
-  const handleSaveGoal = (goalData: Partial<Goal>) => {
-    if (goalData.id) {
-      const existing = goals.find((g) => g.id === goalData.id);
-      if (existing) {
-        dispatch(updateGoal({ ...existing, ...goalData } as Goal));
-      }
-    } else {
-      const newGoal: Goal = {
-        id: Date.now().toString(),
-        userEmail: currentEmail!,
-        title: goalData.title || "",
-        description: goalData.description || "",
-        progress: 0,
-        priority: goalData.priority || "medium",
-        status: "active",
-        dueDate: goalData.dueDate || "",
-        milestones: [],
-        tasks: [],
-        createdAt: +new Date(),
-      };
-      dispatch(addGoal(newGoal));
-    }
-    setEditingGoal(null);
-  };
-
   const handleEditGoal = (goal: Goal) => {
-    setEditingGoal(goal);
-    setDialogOpen(true);
+    router.push(`/goals/goal/edit/${goal.id}`);
   };
 
   const handleDeleteGoal = (id: string) => {
@@ -85,44 +45,7 @@ export function GoalsTracker() {
   };
 
   const handleSelectGoal = (goal: Goal) => {
-    setSelectedGoal(goal);
-    setDetailsOpen(true);
-  };
-
-  const handleToggleMilestone = (goalId: string, milestoneId: string) => {
-    const goal = goals.find((g) => g.id === goalId);
-    if (!goal) return;
-    const updatedMilestones = goal.milestones.map((m) =>
-      m.id === milestoneId ? { ...m, completed: !m.completed } : m,
-    );
-    const updatedGoal = { ...goal, milestones: updatedMilestones };
-    const newProgress = calculateProgress(updatedGoal);
-    const newStatus: GoalStatus = newProgress === 100 ? "completed" : "active";
-    const finalGoal = {
-      ...updatedGoal,
-      progress: newProgress,
-      status: newStatus,
-    };
-    dispatch(updateGoal(finalGoal));
-    setSelectedGoal((prev) => (prev?.id === goalId ? finalGoal : prev));
-  };
-
-  const handleToggleTask = (goalId: string, taskId: string) => {
-    const goal = goals.find((g) => g.id === goalId);
-    if (!goal) return;
-    const updatedTasks = goal.tasks.map((t) =>
-      t.id === taskId ? { ...t, completed: !t.completed } : t,
-    );
-    const updatedGoal = { ...goal, tasks: updatedTasks };
-    const newProgress = calculateProgress(updatedGoal);
-    const newStatus: GoalStatus = newProgress === 100 ? "completed" : "active";
-    const finalGoal = {
-      ...updatedGoal,
-      progress: newProgress,
-      status: newStatus,
-    };
-    dispatch(updateGoal(finalGoal));
-    setSelectedGoal((prev) => (prev?.id === goalId ? finalGoal : prev));
+    router.push(`/goals/goal/edit/${goal.id}`);
   };
 
   return (
@@ -134,8 +57,7 @@ export function GoalsTracker() {
         />
         <Button
           onClick={() => {
-            setEditingGoal(null);
-            setDialogOpen(true);
+            router.push("/goals/goal/add");
           }}
           className="gap-2"
         >
@@ -189,8 +111,7 @@ export function GoalsTracker() {
             <Button
               variant="link"
               onClick={() => {
-                setEditingGoal(null);
-                setDialogOpen(true);
+                router.push("/goals/goal/add");
               }}
             >
               Create your first goal
@@ -211,26 +132,10 @@ export function GoalsTracker() {
               goal={goal}
               onEdit={handleEditGoal}
               onDelete={handleDeleteGoal}
-              onSelect={handleSelectGoal}
             />
           ))}
         </div>
       )}
-
-      <GoalDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        goal={editingGoal}
-        onSave={handleSaveGoal}
-      />
-
-      <GoalDetailsSheet
-        goal={selectedGoal}
-        open={detailsOpen}
-        onOpenChange={setDetailsOpen}
-        onToggleMilestone={handleToggleMilestone}
-        onToggleTask={handleToggleTask}
-      />
     </div>
   );
 }

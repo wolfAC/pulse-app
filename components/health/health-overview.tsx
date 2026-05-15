@@ -27,18 +27,36 @@ function getLatestByType(entries: HealthEntry[], type: string) {
     .sort((a, b) => b.createdAt - a.createdAt)[0];
 }
 
+function toDateKey(ts: number) {
+  const d = new Date(ts);
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+}
+
 function buildWeeklyData(entries: HealthEntry[]) {
-  const sorted = [...entries].sort((a, b) => a.createdAt - b.createdAt);
-  const uniqueDates = [...new Set(sorted.map((e) => e.createdAt))].slice(-7);
-  return uniqueDates.map((date) => {
-    const day = new Date(date).toLocaleDateString("en-US", {
-      weekday: "short",
-    });
-    const dayEntries = entries.filter((e) => e.createdAt === date);
+  // Group entries by calendar day (not exact timestamp)
+  const byDay = new Map<string, HealthEntry[]>();
+  for (const entry of entries) {
+    const key = toDateKey(entry.createdAt);
+    if (!byDay.has(key)) byDay.set(key, []);
+    byDay.get(key)!.push(entry);
+  }
+
+  // Sort days and take the last 7
+  const sortedDays = [...byDay.keys()].sort().slice(-7);
+
+  return sortedDays.map((dateKey) => {
+    const dayEntries = byDay.get(dateKey)!;
+    // Use the first entry's timestamp just to format the weekday label
+    const label = new Date(dayEntries[0].createdAt).toLocaleDateString(
+      "en-US",
+      {
+        weekday: "short",
+      },
+    );
     const get = (type: string) =>
       dayEntries.find((e) => e.type === type)?.value ?? 0;
     return {
-      day,
+      day: label,
       sleep: get("sleep"),
       steps: get("steps"),
       calories: get("calories"),
@@ -86,7 +104,6 @@ export function HealthOverview({
     (state: RootState) => state.health.entries ?? [],
   );
 
-  // Filter to current user only
   const entries = useMemo(
     () => allEntries.filter((e) => e.userEmail === userEmail),
     [allEntries, userEmail],
@@ -96,7 +113,12 @@ export function HealthOverview({
     (typeof METRICS)[number]
   >(METRICS[0]);
 
-  const weeklyData = useMemo(() => buildWeeklyData(entries), [entries]);
+  const weeklyDataRaw = useMemo(() => buildWeeklyData(entries), [entries]);
+  // A single point can't draw a line/area — duplicate it so Recharts renders
+  const weeklyData =
+    weeklyDataRaw.length === 1
+      ? [weeklyDataRaw[0], weeklyDataRaw[0]]
+      : weeklyDataRaw;
 
   const latest = {
     sleep: getLatestByType(entries, "sleep"),
@@ -183,24 +205,27 @@ export function HealthOverview({
                 margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
               >
                 <defs>
-                  <linearGradient
-                    id={selectedMetric.gradientId}
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop
-                      offset="5%"
-                      stopColor={selectedMetric.color}
-                      stopOpacity={0.25}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor={selectedMetric.color}
-                      stopOpacity={0}
-                    />
-                  </linearGradient>
+                  {METRICS.map((metric) => (
+                    <linearGradient
+                      key={metric.gradientId}
+                      id={metric.gradientId}
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="5%"
+                        stopColor={metric.color}
+                        stopOpacity={0.25}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor={metric.color}
+                        stopOpacity={0}
+                      />
+                    </linearGradient>
+                  ))}
                 </defs>
                 <XAxis
                   dataKey="day"
@@ -228,7 +253,7 @@ export function HealthOverview({
                   stroke={selectedMetric.color}
                   strokeWidth={3}
                   fill={`url(#${selectedMetric.gradientId})`}
-                  dot={false}
+                  dot={{ r: 3, fill: selectedMetric.color, strokeWidth: 0 }}
                   activeDot={{ r: 5, strokeWidth: 0 }}
                 />
               </AreaChart>
