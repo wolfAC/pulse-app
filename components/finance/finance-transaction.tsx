@@ -24,12 +24,20 @@ import {
   ArrowUpRight,
   Filter,
   Download,
+  Pencil,
   Search,
   Trash2,
+  TrendingDown,
+  TrendingUp,
+  Wallet,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { TransactionType } from "@/lib/types/finance";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useRouter } from "next/navigation";
+
+// ─── Formatters ───────────────────────────────────────────────────────────────
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-IN", {
@@ -38,6 +46,12 @@ const fmt = (n: number) =>
     maximumFractionDigits: 0,
   }).format(n);
 
+const fmtCompact = (n: number) => {
+  if (n >= 100_000) return `₹${(n / 100_000).toFixed(1)}L`;
+  if (n >= 1_000) return `₹${(n / 1_000).toFixed(0)}K`;
+  return `₹${n}`;
+};
+
 const fmtDate = (d: number) =>
   new Date(d).toLocaleDateString("en-IN", {
     day: "numeric",
@@ -45,11 +59,71 @@ const fmtDate = (d: number) =>
     year: "numeric",
   });
 
+// ─── Summary strip (mobile) ───────────────────────────────────────────────────
+
+function SummaryStrip({
+  income,
+  expenses,
+  net,
+}: {
+  income: number;
+  expenses: number;
+  net: number;
+}) {
+  const cells = [
+    {
+      icon: TrendingUp,
+      label: "Income",
+      value: fmtCompact(income),
+      color: "text-green-600",
+    },
+    {
+      icon: TrendingDown,
+      label: "Expenses",
+      value: fmtCompact(expenses),
+      color: "text-destructive",
+    },
+    {
+      icon: Wallet,
+      label: "Net",
+      value: (net >= 0 ? "+" : "−") + fmtCompact(Math.abs(net)),
+      color: net >= 0 ? "text-green-600" : "text-destructive",
+    },
+  ];
+
+  return (
+    <Card className="overflow-hidden">
+      <CardContent className="p-0">
+        <div className="grid grid-cols-3 divide-x divide-border">
+          {cells.map(({ icon: Icon, label, value, color }) => (
+            <div
+              key={label}
+              className="flex flex-col items-center justify-center gap-0.5 p-3 text-center"
+            >
+              <Icon className="h-3.5 w-3.5 text-muted-foreground mb-0.5" />
+              <p className="text-[11px] text-muted-foreground leading-none">
+                {label}
+              </p>
+              <p className={cn("text-base font-bold leading-tight", color)}>
+                {value}
+              </p>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Props ────────────────────────────────────────────────────────────────────
+
 interface TransactionsSectionProps {
   viewMode: string;
   userEmail: string | null;
   onImportTransaction: () => void;
 }
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 export function TransactionsSection({
   viewMode,
@@ -57,9 +131,11 @@ export function TransactionsSection({
   onImportTransaction,
 }: TransactionsSectionProps) {
   const dispatch = useDispatch();
+  const router = useRouter();
   const allTransactions = useSelector(
     (state: RootState) => state.finance.transactions,
   );
+  const isMobile = useIsMobile();
 
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<"all" | TransactionType>("all");
@@ -102,39 +178,43 @@ export function TransactionsSection({
 
   return (
     <div className="space-y-4">
-      {/* Summary */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Total Income</p>
-            <p className="text-2xl font-bold text-green-600">
-              +{fmt(totals.income)}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Total Expenses</p>
-            <p className="text-2xl font-bold text-destructive">
-              -{fmt(totals.expenses)}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Net Balance</p>
-            <p
-              className={cn(
-                "text-2xl font-bold",
-                totals.net >= 0 ? "text-green-600" : "text-destructive",
-              )}
-            >
-              {totals.net >= 0 ? "+" : ""}
-              {fmt(totals.net)}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Summary — strip on mobile, 3 cards on desktop */}
+      {isMobile ? (
+        <SummaryStrip {...totals} />
+      ) : (
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card>
+            <CardContent className="pt-6">
+              <p className="text-sm text-muted-foreground">Total Income</p>
+              <p className="text-2xl font-bold text-green-600">
+                +{fmt(totals.income)}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <p className="text-sm text-muted-foreground">Total Expenses</p>
+              <p className="text-2xl font-bold text-destructive">
+                -{fmt(totals.expenses)}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <p className="text-sm text-muted-foreground">Net Balance</p>
+              <p
+                className={cn(
+                  "text-2xl font-bold",
+                  totals.net >= 0 ? "text-green-600" : "text-destructive",
+                )}
+              >
+                {totals.net >= 0 ? "+" : ""}
+                {fmt(totals.net)}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Filters */}
       <Card>
@@ -251,6 +331,16 @@ export function TransactionsSection({
                     {tx.type === "income" ? "+" : "−"}
                     {fmt(tx.amount)}
                   </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 shrink-0 text-muted-foreground hover:text-primary"
+                    onClick={() =>
+                      router.push(`/finance/transaction/edit/${tx.id}`)
+                    }
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
                   <Button
                     variant="ghost"
                     size="icon"

@@ -10,9 +10,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { RootState } from "@/store/index";
+import { cn } from "@/lib/utils";
+import {
+  TrendingDown,
+  TrendingUp,
+  ArrowLeftRight,
+  PiggyBank,
+} from "lucide-react";
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
+import { useIsMobile } from "@/hooks/use-mobile";
+
+// ─── Formatters ───────────────────────────────────────────────────────────────
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-IN", {
@@ -21,16 +32,101 @@ const fmt = (n: number) =>
     maximumFractionDigits: 0,
   }).format(n);
 
+const fmtCompact = (n: number) => {
+  if (n >= 100_000) return `₹${(n / 100_000).toFixed(1)}L`;
+  if (n >= 1_000) return `₹${(n / 1_000).toFixed(0)}K`;
+  return `₹${Math.round(n)}`;
+};
+
+// ─── Summary strip (mobile) ───────────────────────────────────────────────────
+
+function SummaryStrip({
+  thisMonthExpenses,
+  thisMonthIncome,
+  expenseChange,
+  incomeChange,
+  savingsRate,
+  saved,
+}: {
+  thisMonthExpenses: number;
+  thisMonthIncome: number;
+  expenseChange: number;
+  incomeChange: number;
+  savingsRate: number;
+  saved: number;
+}) {
+  const cells = [
+    {
+      icon: TrendingDown,
+      label: "Spending",
+      value: fmtCompact(thisMonthExpenses),
+      sub: `${expenseChange > 0 ? "+" : ""}${expenseChange.toFixed(1)}% vs last`,
+      color: "text-destructive",
+      subColor: expenseChange <= 0 ? "text-green-600" : "text-destructive",
+    },
+    {
+      icon: TrendingUp,
+      label: "Income",
+      value: fmtCompact(thisMonthIncome),
+      sub: `${incomeChange > 0 ? "+" : ""}${incomeChange.toFixed(1)}% vs last`,
+      color: "text-green-600",
+      subColor: incomeChange >= 0 ? "text-green-600" : "text-destructive",
+    },
+    {
+      icon: PiggyBank,
+      label: "Saved",
+      value: fmtCompact(Math.abs(saved)),
+      sub: `${Math.round(savingsRate)}% rate`,
+      color: saved >= 0 ? "text-green-600" : "text-destructive",
+      subColor: "text-muted-foreground",
+    },
+  ];
+
+  return (
+    <Card className="overflow-hidden">
+      <CardContent className="p-0">
+        <div className="grid grid-cols-3 divide-x divide-border">
+          {cells.map(({ icon: Icon, label, value, sub, color, subColor }) => (
+            <div
+              key={label}
+              className="flex flex-col items-center justify-center gap-0.5 p-3 text-center"
+            >
+              <Icon className="h-3.5 w-3.5 text-muted-foreground mb-0.5" />
+              <p className="text-[11px] text-muted-foreground leading-none">
+                {label}
+              </p>
+              <p className={cn("text-base font-bold leading-tight", color)}>
+                {value}
+              </p>
+              <p className={cn("text-[10px] leading-none mt-0.5", subColor)}>
+                {sub}
+              </p>
+            </div>
+          ))}
+        </div>
+        {/* Savings rate bar */}
+        <div className="px-4 pb-3 pt-1">
+          <Progress
+            value={Math.max(0, Math.min(savingsRate, 100))}
+            className={cn("h-1.5", savingsRate < 0 && "[&>div]:bg-destructive")}
+          />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
+
 export default function BudgetAnalytics() {
   const currentEmail = useSelector(
     (state: RootState) => state.auth.currentEmail,
   );
-
   const allTransactions = useSelector(
     (state: RootState) => state.finance.transactions ?? [],
   );
+  const isMobile = useIsMobile();
 
-  // Filter to logged-in user
   const transactions = useMemo(
     () => allTransactions.filter((tx) => tx.userEmail === currentEmail),
     [allTransactions, currentEmail],
@@ -45,19 +141,13 @@ export default function BudgetAnalytics() {
 
     const thisMonthTx = transactions.filter((t) => {
       const date = new Date(t.createdAt);
-      const month = `${date.getFullYear()}-${String(
-        date.getMonth() + 1,
-      ).padStart(2, "0")}`;
-
+      const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
       return month === currentMonth;
     });
 
     const lastMonthTx = transactions.filter((t) => {
       const date = new Date(t.createdAt);
-      const month = `${date.getFullYear()}-${String(
-        date.getMonth() + 1,
-      ).padStart(2, "0")}`;
-
+      const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
       return month === prevMonth;
     });
 
@@ -101,27 +191,19 @@ export default function BudgetAnalytics() {
     };
   }, [transactions]);
 
-  // Category breakdown from user's transactions
   const categoryData = useMemo(() => {
     const currentMonth = new Date().toISOString().slice(0, 7);
-
     const map: Record<string, number> = {};
-
     transactions
       .filter((t) => {
         const txMonth = new Date(t.createdAt).toISOString().slice(0, 7);
-
         return t.type === "expense" && txMonth === currentMonth;
       })
       .forEach((t) => {
         map[t.category] = (map[t.category] ?? 0) + t.amount;
       });
-
     return Object.entries(map)
-      .map(([category, amount]) => ({
-        category,
-        amount,
-      }))
+      .map(([category, amount]) => ({ category, amount }))
       .sort((a, b) => b.amount - a.amount);
   }, [transactions]);
 
@@ -129,79 +211,74 @@ export default function BudgetAnalytics() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          Analytics
-        </h1>
-        <p className="text-muted-foreground">
-          Insights and trends from your financial data
-        </p>
-      </div>
+      {/* Summary — strip on mobile, 4-card grid on desktop */}
+      {isMobile ? (
+        <SummaryStrip {...stats} />
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>This Month's Spending</CardDescription>
+              <CardTitle className="text-2xl">
+                {fmt(stats.thisMonthExpenses)}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p
+                className={`text-sm ${stats.expenseChange <= 0 ? "text-green-600" : "text-destructive"}`}
+              >
+                {stats.expenseChange > 0 ? "+" : ""}
+                {stats.expenseChange.toFixed(1)}% vs last month
+              </p>
+            </CardContent>
+          </Card>
 
-      {/* Summary Stats */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>This Month's Spending</CardDescription>
-            <CardTitle className="text-2xl">
-              {fmt(stats.thisMonthExpenses)}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p
-              className={`text-sm ${stats.expenseChange <= 0 ? "text-green-600" : "text-destructive"}`}
-            >
-              {stats.expenseChange > 0 ? "+" : ""}
-              {stats.expenseChange.toFixed(1)}% vs last month
-            </p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>This Month's Income</CardDescription>
+              <CardTitle className="text-2xl">
+                {fmt(stats.thisMonthIncome)}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p
+                className={`text-sm ${stats.incomeChange >= 0 ? "text-green-600" : "text-destructive"}`}
+              >
+                {stats.incomeChange > 0 ? "+" : ""}
+                {stats.incomeChange.toFixed(1)}% vs last month
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>This Month's Income</CardDescription>
-            <CardTitle className="text-2xl">
-              {fmt(stats.thisMonthIncome)}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p
-              className={`text-sm ${stats.incomeChange >= 0 ? "text-green-600" : "text-destructive"}`}
-            >
-              {stats.incomeChange > 0 ? "+" : ""}
-              {stats.incomeChange.toFixed(1)}% vs last month
-            </p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>Avg Transaction</CardDescription>
+              <CardTitle className="text-2xl">
+                {fmt(stats.avgTransaction)}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                {stats.transactionCount} transactions this month
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Avg Transaction</CardDescription>
-            <CardTitle className="text-2xl">
-              {fmt(stats.avgTransaction)}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              {stats.transactionCount} transactions this month
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Savings Rate</CardDescription>
-            <CardTitle className="text-2xl">
-              {Math.round(stats.savingsRate)}%
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              {fmt(stats.saved)} saved
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>Savings Rate</CardDescription>
+              <CardTitle className="text-2xl">
+                {Math.round(stats.savingsRate)}%
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                {fmt(stats.saved)} saved
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Charts Row 1 */}
       <div className="grid gap-4 lg:grid-cols-2">

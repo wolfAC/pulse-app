@@ -19,20 +19,36 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { categories, TransactionType } from "@/lib/types/finance";
+import type { Transaction } from "@/lib/types/finance";
 import type { RootState } from "@/store/index";
 import { addTransaction } from "@/store/slices/finance";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
+export interface TransactionFormData {
+  type: TransactionType;
+  amount: number;
+  category: string;
+  note?: string;
+  counterParty?: string;
+  date: string;
+}
+
 interface TransactionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  transaction?: Transaction | null;
+  onSave?: (data: TransactionFormData) => void;
 }
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
 
 const emptyForm = {
   type: "expense" as TransactionType,
@@ -50,13 +66,33 @@ const emptyForm = {
 export function TransactionDialog({
   open,
   onOpenChange,
+  transaction,
+  onSave,
 }: TransactionDialogProps) {
   const dispatch = useDispatch();
   const currentEmail = useSelector(
     (state: RootState) => state.auth.currentEmail,
   );
 
+  const isEditing = !!transaction;
   const [form, setForm] = useState(emptyForm);
+
+  useEffect(() => {
+    if (open) {
+      if (transaction) {
+        setForm({
+          type: transaction.type,
+          category: transaction.category,
+          amount: String(transaction.amount),
+          note: transaction.note ?? "",
+          date: new Date(transaction.createdAt).toISOString().split("T")[0],
+          counterParty: transaction.counterParty ?? "",
+        });
+      } else {
+        setForm(emptyForm);
+      }
+    }
+  }, [transaction, open]);
 
   const setField =
     (key: keyof typeof emptyForm) => (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -72,8 +108,23 @@ export function TransactionDialog({
   };
 
   const handleSubmit = () => {
-    if (!form.category || !form.amount || !currentEmail) return;
+    if (!form.category || !form.amount) return;
 
+    // If a custom onSave handler is provided (e.g. from edit route), delegate to it
+    if (onSave) {
+      onSave({
+        type: form.type,
+        amount: parseFloat(form.amount),
+        category: form.category,
+        note: form.note || undefined,
+        counterParty: form.counterParty || undefined,
+        date: form.date,
+      });
+      return; // caller is responsible for closing / navigating
+    }
+
+    // Default: add new transaction via dispatch
+    if (!currentEmail) return;
     dispatch(
       addTransaction({
         id: Date.now().toString(),
@@ -84,7 +135,7 @@ export function TransactionDialog({
         note: form.note || undefined,
         counterParty: form.counterParty || undefined,
         source: "manual",
-        createdAt: Date.now(),
+        createdAt: new Date(form.date).getTime(),
       }),
     );
 
@@ -101,9 +152,13 @@ export function TransactionDialog({
     >
       <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
-          <DialogTitle>Add Transaction</DialogTitle>
+          <DialogTitle>
+            {isEditing ? "Edit Transaction" : "Add Transaction"}
+          </DialogTitle>
           <DialogDescription>
-            Record a new income or expense transaction.
+            {isEditing
+              ? "Update the details of this transaction."
+              : "Record a new income or expense transaction."}
           </DialogDescription>
         </DialogHeader>
 
@@ -210,7 +265,7 @@ export function TransactionDialog({
             onClick={handleSubmit}
             disabled={!form.category || !form.amount}
           >
-            Add Transaction
+            {isEditing ? "Save Changes" : "Add Transaction"}
           </Button>
         </DialogFooter>
       </DialogContent>
