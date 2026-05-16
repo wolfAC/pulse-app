@@ -159,11 +159,10 @@ export function AppSidebar() {
             <SidebarMenuItem>
               <SidebarMenuButton size="lg" className="gap-3">
                 <Avatar className="size-8">
-                  <AvatarImage
-                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face"
-                    alt="User"
-                  />
-                  <AvatarFallback>{initials}</AvatarFallback>
+                  <AvatarImage alt="User" />
+                  <AvatarFallback className="bg-primary/10 text-primary text-lg font-medium">
+                    {initials}
+                  </AvatarFallback>
                 </Avatar>
 
                 {/* Hide when collapsed */}

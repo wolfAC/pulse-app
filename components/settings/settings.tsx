@@ -260,321 +260,337 @@ export function SettingsPage() {
 
   // ── render ────────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="flex flex-col h-full overflow-hidden">
       <PageHeader
         title="Settings"
         description="Manage your account and preferences"
       />
 
-      {isSaved && (
-        <Alert className="border-success/50 bg-success/10">
-          <AlertTitle className="text-success">Saved</AlertTitle>
-          <AlertDescription>
-            Your changes have been saved successfully.
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* ── Profile ──────────────────────────────────────────────────────── */}
-      <SettingsSection
-        icon={User}
-        title="Profile"
-        description="Update your personal information"
-      >
-        <div className="flex items-center gap-4">
-          <Avatar className="h-16 w-16">
-            <AvatarImage />
-            <AvatarFallback className="bg-primary/10 text-primary text-lg font-medium">
-              {name ? getInitials(name) : "U"}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <p className="font-medium text-foreground">{name || "User"}</p>
-            <p className="text-sm text-muted-foreground">{email}</p>
-          </div>
-        </div>
-
-        <Separator />
-
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
-            <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-          <Button onClick={handleSaveProfile} disabled={!currentEmail}>
-            Save Changes
-          </Button>
-        </div>
-      </SettingsSection>
-
-      {/* ── Appearance ───────────────────────────────────────────────────── */}
-      <SettingsSection
-        icon={Palette}
-        title="Appearance"
-        description="Customize the look and feel"
-      >
-        <SettingsRow label="Theme" hint="Select your preferred theme">
-          <Select
-            value={reduxTheme}
-            onValueChange={(v) => handleThemeChange(v as Theme)}
-          >
-            <SelectTrigger className="w-37.5">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="light">Light</SelectItem>
-              <SelectItem value="dark">Dark</SelectItem>
-              <SelectItem value="system">System</SelectItem>
-            </SelectContent>
-          </Select>
-        </SettingsRow>
-
-        <Separator />
-
-        <SettingsRow label="Currency" hint="Default currency for display">
-          <Select
-            value={currency}
-            onValueChange={(v) => dispatch(setCurrency(v))}
-          >
-            <SelectTrigger className="w-45">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {currencies.map((c) => (
-                <SelectItem key={c.value} value={c.value}>
-                  {c.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </SettingsRow>
-
-        <Separator />
-
-        {/* Primary colour picker */}
-        <div className="space-y-3">
-          <div>
-            <Label>Primary Color</Label>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              Accent colour used across the app
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2.5">
-            {colorPresets.map((preset) => {
-              const isActive = primaryColor === preset.value;
-              return (
-                <button
-                  key={preset.label}
-                  type="button"
-                  title={preset.label}
-                  onClick={() => handleColorChange(preset.value)}
-                  className="group relative size-8 rounded-full transition-transform hover:scale-110 focus:outline-none"
-                  style={{ backgroundColor: preset.ring }}
-                >
-                  {isActive && (
-                    <span className="absolute inset-0 rounded-full ring-2 ring-white ring-offset-2 ring-offset-background" />
-                  )}
-                  <span className="sr-only">{preset.label}</span>
-                </button>
-              );
-            })}
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Current:{" "}
-            <span className="font-medium text-foreground">
-              {colorPresets.find((p) => p.value === primaryColor)?.label ??
-                "Custom"}
-            </span>
-          </p>
-        </div>
-      </SettingsSection>
-
-      {/* ── Notifications ────────────────────────────────────────────────── */}
-      <SettingsSection
-        icon={Bell}
-        title="Notifications"
-        description="Configure notification preferences"
-      >
-        <SettingsRow
-          label="Budget Alerts"
-          hint="Get notified when approaching budget limits"
-        >
-          <Switch checked={notifications} onCheckedChange={setNotifications} />
-        </SettingsRow>
-
-        <Separator />
-
-        <SettingsRow label="Remember Me" hint="Stay logged in on this device">
-          <Switch checked={rememberMe} onCheckedChange={setRememberMe} />
-        </SettingsRow>
-      </SettingsSection>
-
-      {/* ── Security ─────────────────────────────────────────────────────── */}
-      <SettingsSection
-        icon={Shield}
-        title="Security"
-        description="Manage your PIN and account security"
-      >
-        <div className="space-y-2">
-          <Label htmlFor="newPin">Update PIN</Label>
-          <div className="flex gap-2">
-            <Input
-              id="newPin"
-              type="password"
-              placeholder="Enter new 4-6 digit PIN"
-              value={newPin}
-              onChange={(e) => {
-                setNewPin(e.target.value.replace(/\D/g, "").slice(0, 6));
-                setPinError("");
-              }}
-              maxLength={6}
-            />
-            <Button
-              onClick={handleUpdatePin}
-              disabled={!currentEmail || newPin.length < 4}
-            >
-              Update
-            </Button>
-          </div>
-          {pinError ? (
-            <p className="text-xs text-destructive">{pinError}</p>
-          ) : (
-            <p className="text-xs text-muted-foreground">
-              PIN must be 4-6 digits
-            </p>
+      <div className="flex-1 overflow-y-auto">
+        <div className="space-y-6 max-w-2xl pt-4">
+          {isSaved && (
+            <Alert className="border-success/50 bg-success/10">
+              <AlertTitle className="text-success">Saved</AlertTitle>
+              <AlertDescription>
+                Your changes have been saved successfully.
+              </AlertDescription>
+            </Alert>
           )}
-        </div>
-      </SettingsSection>
 
-      {/* ── Data Management ──────────────────────────────────────────────── */}
-      <SettingsSection
-        icon={Download}
-        title="Data Management"
-        description="Export or import your financial data"
-      >
-        {importSuccess && (
-          <Alert className="border-success/50 bg-success/10">
-            <AlertDescription className="text-success">
-              Data imported successfully!
-            </AlertDescription>
-          </Alert>
-        )}
-        {importError && (
-          <Alert variant="destructive">
-            <AlertDescription>{importError}</AlertDescription>
-          </Alert>
-        )}
-
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Button
-            variant="outline"
-            onClick={handleExport}
-            className="flex-1 gap-2"
+          {/* ── Profile ──────────────────────────────────────────────────────── */}
+          <SettingsSection
+            icon={User}
+            title="Profile"
+            description="Update your personal information"
           >
-            <Download className="h-4 w-4" /> Export Data
-          </Button>
-          <Button
-            variant="outline"
-            className="flex-1 gap-2"
-            onClick={() => fileInputRef.current?.click()}
+            <div className="flex items-center gap-4">
+              <Avatar className="h-16 w-16">
+                <AvatarImage alt="User" />
+                <AvatarFallback className="bg-primary/10 text-primary text-lg font-medium">
+                  {name ? getInitials(name) : "U"}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="font-medium text-foreground">{name || "User"}</p>
+                <p className="text-sm text-muted-foreground">{email}</p>
+              </div>
+            </div>
+
+            <Separator />
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+              <Button onClick={handleSaveProfile} disabled={!currentEmail}>
+                Save Changes
+              </Button>
+            </div>
+          </SettingsSection>
+
+          {/* ── Appearance ───────────────────────────────────────────────────── */}
+          <SettingsSection
+            icon={Palette}
+            title="Appearance"
+            description="Customize the look and feel"
           >
-            <Upload className="h-4 w-4" /> Import Data
-          </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".json"
-            className="hidden"
-            onChange={handleImport}
-          />
-        </div>
-        <p className="text-xs text-muted-foreground">
-          Export creates a JSON backup of all your data. Import will merge with
-          existing data.
-        </p>
-      </SettingsSection>
+            <SettingsRow label="Theme" hint="Select your preferred theme">
+              <Select
+                value={reduxTheme}
+                onValueChange={(v) => handleThemeChange(v as Theme)}
+              >
+                <SelectTrigger className="w-37.5">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="light">Light</SelectItem>
+                  <SelectItem value="dark">Dark</SelectItem>
+                  <SelectItem value="system">System</SelectItem>
+                </SelectContent>
+              </Select>
+            </SettingsRow>
 
-      {/* ── Danger Zone ──────────────────────────────────────────────────── */}
-      <SettingsSection
-        icon={Trash2}
-        title="Danger Zone"
-        description="Irreversible actions"
-        className="border-destructive/50"
-      >
-        <div className="flex flex-col gap-3 sm:flex-row">
-          {/* Sign Out Dialog */}
-          <Dialog open={signOutDialogOpen} onOpenChange={setSignOutDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="flex-1 gap-2">
-                <LogOut className="h-4 w-4" /> Sign Out
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Sign out?</DialogTitle>
-                <DialogDescription>
-                  You will be returned to the login screen. Any unsaved changes
-                  will be lost.
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setSignOutDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button variant="default" onClick={handleLogout}>
-                  Sign Out
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+            <Separator />
 
-          {/* Delete All Data Dialog */}
-          <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="destructive" className="flex-1 gap-2">
-                <Trash2 className="h-4 w-4" /> Delete All Data
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Are you absolutely sure?</DialogTitle>
-                <DialogDescription>
-                  This will permanently delete all your financial data —
-                  transactions, budgets, savings goals, and settings. This
-                  cannot be undone.
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
+            <SettingsRow label="Currency" hint="Default currency for display">
+              <Select
+                value={currency}
+                onValueChange={(v) => dispatch(setCurrency(v))}
+              >
+                <SelectTrigger className="w-45">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {currencies.map((c) => (
+                    <SelectItem key={c.value} value={c.value}>
+                      {c.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </SettingsRow>
+
+            <Separator />
+
+            {/* Primary colour picker */}
+            <div className="space-y-3">
+              <div>
+                <Label>Primary Color</Label>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Accent colour used across the app
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2.5">
+                {colorPresets.map((preset) => {
+                  const isActive = primaryColor === preset.value;
+                  return (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      title={preset.label}
+                      onClick={() => handleColorChange(preset.value)}
+                      className="group relative size-8 rounded-full transition-transform hover:scale-110 focus:outline-none"
+                      style={{ backgroundColor: preset.ring }}
+                    >
+                      {isActive && (
+                        <span className="absolute inset-0 rounded-full ring-2 ring-white ring-offset-2 ring-offset-background" />
+                      )}
+                      <span className="sr-only">{preset.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Current:{" "}
+                <span className="font-medium text-foreground">
+                  {colorPresets.find((p) => p.value === primaryColor)?.label ??
+                    "Custom"}
+                </span>
+              </p>
+            </div>
+          </SettingsSection>
+
+          {/* ── Notifications ────────────────────────────────────────────────── */}
+          <SettingsSection
+            icon={Bell}
+            title="Notifications"
+            description="Configure notification preferences"
+          >
+            <SettingsRow
+              label="Budget Alerts"
+              hint="Get notified when approaching budget limits"
+            >
+              <Switch
+                checked={notifications}
+                onCheckedChange={setNotifications}
+              />
+            </SettingsRow>
+
+            <Separator />
+
+            <SettingsRow
+              label="Remember Me"
+              hint="Stay logged in on this device"
+            >
+              <Switch checked={rememberMe} onCheckedChange={setRememberMe} />
+            </SettingsRow>
+          </SettingsSection>
+
+          {/* ── Security ─────────────────────────────────────────────────────── */}
+          <SettingsSection
+            icon={Shield}
+            title="Security"
+            description="Manage your PIN and account security"
+          >
+            <div className="space-y-2">
+              <Label htmlFor="newPin">Update PIN</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="newPin"
+                  type="password"
+                  placeholder="Enter new 4-6 digit PIN"
+                  value={newPin}
+                  onChange={(e) => {
+                    setNewPin(e.target.value.replace(/\D/g, "").slice(0, 6));
+                    setPinError("");
+                  }}
+                  maxLength={6}
+                />
                 <Button
-                  variant="outline"
-                  onClick={() => setDeleteDialogOpen(false)}
+                  onClick={handleUpdatePin}
+                  disabled={!currentEmail || newPin.length < 4}
                 >
-                  Cancel
+                  Update
                 </Button>
-                <Button variant="destructive" onClick={handleDeleteAccount}>
-                  Yes, delete everything
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+              </div>
+              {pinError ? (
+                <p className="text-xs text-destructive">{pinError}</p>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  PIN must be 4-6 digits
+                </p>
+              )}
+            </div>
+          </SettingsSection>
+
+          {/* ── Data Management ──────────────────────────────────────────────── */}
+          <SettingsSection
+            icon={Download}
+            title="Data Management"
+            description="Export or import your financial data"
+          >
+            {importSuccess && (
+              <Alert className="border-success/50 bg-success/10">
+                <AlertDescription className="text-success">
+                  Data imported successfully!
+                </AlertDescription>
+              </Alert>
+            )}
+            {importError && (
+              <Alert variant="destructive">
+                <AlertDescription>{importError}</AlertDescription>
+              </Alert>
+            )}
+
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Button
+                variant="outline"
+                onClick={handleExport}
+                className="flex-1 gap-2"
+              >
+                <Download className="h-4 w-4" /> Export Data
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1 gap-2"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className="h-4 w-4" /> Import Data
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                className="hidden"
+                onChange={handleImport}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Export creates a JSON backup of all your data. Import will merge
+              with existing data.
+            </p>
+          </SettingsSection>
+
+          {/* ── Danger Zone ──────────────────────────────────────────────────── */}
+          <SettingsSection
+            icon={Trash2}
+            title="Danger Zone"
+            description="Irreversible actions"
+            className="border-destructive/50"
+          >
+            <div className="flex flex-col gap-3 sm:flex-row">
+              {/* Sign Out Dialog */}
+              <Dialog
+                open={signOutDialogOpen}
+                onOpenChange={setSignOutDialogOpen}
+              >
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="flex-1 gap-2">
+                    <LogOut className="h-4 w-4" /> Sign Out
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Sign out?</DialogTitle>
+                    <DialogDescription>
+                      You will be returned to the login screen. Any unsaved
+                      changes will be lost.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      onClick={() => setSignOutDialogOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button variant="default" onClick={handleLogout}>
+                      Sign Out
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              {/* Delete All Data Dialog */}
+              <Dialog
+                open={deleteDialogOpen}
+                onOpenChange={setDeleteDialogOpen}
+              >
+                <DialogTrigger asChild>
+                  <Button variant="destructive" className="flex-1 gap-2">
+                    <Trash2 className="h-4 w-4" /> Delete All Data
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Are you absolutely sure?</DialogTitle>
+                    <DialogDescription>
+                      This will permanently delete all your financial data —
+                      transactions, budgets, savings goals, and settings. This
+                      cannot be undone.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      onClick={() => setDeleteDialogOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button variant="destructive" onClick={handleDeleteAccount}>
+                      Yes, delete everything
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </SettingsSection>
         </div>
-      </SettingsSection>
+      </div>
     </div>
   );
 }

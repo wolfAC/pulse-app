@@ -1,9 +1,8 @@
 "use client";
 
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,14 +11,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bell, Search, Command, Zap } from "lucide-react";
-import { useDispatch, useSelector } from "react-redux";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { RootState } from "@/store";
 import { logout } from "@/store/slices/auth";
+import { Bell, Command, Search, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useEffect, useState } from "react";
-import { GlobalSearch } from "../search/global-search";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 const notifications = [
   {
@@ -50,7 +49,6 @@ interface TopNavbarProps {
 }
 
 export function TopNavbar({ onSearchOpen }: TopNavbarProps) {
-  const dispatch = useDispatch();
   const router = useRouter();
   const isMobile = useIsMobile();
 
@@ -82,11 +80,6 @@ export function TopNavbar({ onSearchOpen }: TopNavbarProps) {
         .toUpperCase()
         .slice(0, 2)
     : "?";
-
-  const handleSignOut = () => {
-    dispatch(logout());
-    router.replace("/login");
-  };
 
   const unreadCount = notifications.filter((n) => n.unread).length;
 
@@ -164,42 +157,20 @@ export function TopNavbar({ onSearchOpen }: TopNavbarProps) {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative size-9 rounded-full">
-              <Avatar className="size-8">
-                <AvatarImage
-                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face"
-                  alt="User"
-                />
-                <AvatarFallback>{initials}</AvatarFallback>
-              </Avatar>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>
-              <div className="flex flex-col gap-1">
-                <span className="font-medium text-sm truncate">
-                  {user?.name ?? "—"}
-                </span>
-                <span className="text-xs text-muted-foreground truncate">
-                  {user?.email ?? "—"}
-                </span>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Settings</DropdownMenuItem>
-            <DropdownMenuItem>Billing</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="text-destructive"
-              onClick={handleSignOut}
-            >
-              Sign out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {isMobile && (
+          <Button
+            variant="ghost"
+            className="relative size-9 rounded-full"
+            onClick={() => router.push("/settings")}
+          >
+            <Avatar className="size-8">
+              <AvatarImage alt="User" />
+              <AvatarFallback className="bg-primary/10 text-primary text-lg font-medium">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+          </Button>
+        )}
       </div>
     </header>
   );

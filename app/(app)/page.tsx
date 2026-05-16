@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
@@ -8,7 +7,6 @@ import { Dashboard } from "@/components/dashboard/dashboard";
 
 export default function DashboardPage() {
   const router = useRouter();
-
   const currentEmail = useSelector(
     (state: RootState) => state.auth.currentEmail,
   );
@@ -16,7 +14,6 @@ export default function DashboardPage() {
     (state: RootState) => state.auth.isAuthenticated,
   );
   const appLocked = useSelector((state: RootState) => state.app.appLocked);
-
   const onboardingCompleted = useSelector((state: RootState) =>
     currentEmail ? !!state.auth.users[currentEmail] : false,
   );
@@ -31,13 +28,12 @@ export default function DashboardPage() {
     }
   }, [onboardingCompleted, isAuthenticated, appLocked, router]);
 
-  // Don't render the dashboard while redirecting
   if (!onboardingCompleted || !isAuthenticated || appLocked) {
     return null;
   }
 
   return (
-    <div className="space-y-1">
+    <div className="h-full overflow-hidden">
       <Dashboard />
     </div>
   );

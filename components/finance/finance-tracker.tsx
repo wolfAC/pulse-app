@@ -1,97 +1,31 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { RootState } from "@/store/index";
 import { LayoutGrid, List, Plus } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useSelector } from "react-redux";
-import { BudgetDialog } from "./budget-dialog";
 import BudgetAnalytics from "./finance-analytics";
 import { BudgetsOverview } from "./finance-overview";
 import { SavingsSection } from "./finance-savings";
 import { TransactionsSection } from "./finance-transaction";
 import { StatementImportDialog } from "./statement-import-dialog";
-import { useRouter } from "next/navigation";
-
 export function FinanceTracker() {
   const [activeTab, setActiveTab] = useState("overview");
   const [viewMode, setViewMode] = useState("grid");
-
-  // Dialog state — only one dialog open at a time
-
   const [stDialogOpen, setStDialogOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const router = useRouter();
 
   const currentEmail = useSelector(
     (state: RootState) => state.auth.currentEmail,
   );
-  const allTransactions = useSelector(
-    (state: RootState) => state.finance.transactions,
-  );
-  const allBudgets = useSelector((state: RootState) => state.finance.budgets);
-  const allGoals = useSelector(
-    (state: RootState) => state.finance.savingsGoals,
-  );
 
-  const currentMonth = new Date().toISOString().slice(0, 7);
-
-  // Scope to current user
-  const transactions = useMemo(
-    () => allTransactions.filter((tx) => tx.userEmail === currentEmail),
-    [allTransactions, currentEmail],
-  );
-  const budgets = useMemo(
-    () =>
-      allBudgets.filter(
-        (b) => b.userEmail === currentEmail && b.month === currentMonth,
-      ),
-    [allBudgets, currentEmail, currentMonth],
-  );
-  const savingsGoals = useMemo(
-    () => allGoals.filter((g) => g.userEmail === currentEmail),
-    [allGoals, currentEmail],
-  );
-
-  // Derived stats (shown in the top summary card)
-  const stats = useMemo(() => {
-    const monthTx = transactions.filter((tx) => {
-      const txMonth = new Date(tx.createdAt).toISOString().slice(0, 7);
-
-      return txMonth === currentMonth;
-    });
-
-    const income = monthTx
-      .filter((tx) => tx.type === "income")
-      .reduce((s, tx) => s + tx.amount, 0);
-
-    const expenses = monthTx
-      .filter((tx) => tx.type === "expense")
-      .reduce((s, tx) => s + tx.amount, 0);
-
-    const totalBudget = budgets.reduce((s, b) => s + b.limit, 0);
-    const overBudgetCount = budgets.filter((b) => {
-      const spent = monthTx
-        .filter((tx) => tx.type === "expense" && tx.category === b.category)
-        .reduce((s, tx) => s + tx.amount, 0);
-      return spent > b.limit;
-    }).length;
-
-    const totalSaved = savingsGoals.reduce((s, g) => s + g.currentAmount, 0);
-
-    return {
-      income: income ? `₹${income.toLocaleString("en-IN")}` : "—",
-      expenses: expenses ? `₹${expenses.toLocaleString("en-IN")}` : "—",
-      budget: totalBudget ? `₹${totalBudget.toLocaleString("en-IN")}` : "—",
-      overBudget: overBudgetCount > 0 ? `${overBudgetCount} over` : "On track",
-      saved: totalSaved ? `₹${totalSaved.toLocaleString("en-IN")}` : "—",
-    };
-  }, [transactions, budgets, savingsGoals, currentMonth]);
-
-  // CTA button changes per tab
   const handleAdd = () => {
     if (activeTab === "overview") router.push("/finance/budget/add");
     else if (activeTab === "transactions")
@@ -107,95 +41,88 @@ export function FinanceTracker() {
         : "Add Goal";
 
   return (
-    <div className="space-y-6">
-      {/* ------------------------------------------------------------------ */}
-      {/* Header                                                               */}
-      {/* ------------------------------------------------------------------ */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <PageHeader
-          title="Finance"
-          description="Manage your budgets, transactions and savings"
-        />
-        <Button onClick={handleAdd} className="gap-2">
-          <Plus className="h-4 w-4" />
-          {addLabel}
-        </Button>
-      </div>
-
-      {/* ------------------------------------------------------------------ */}
-      {/* Quick Stats Card                                                     */}
-      {/* ------------------------------------------------------------------ */}
-      <Card>
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 px-6 py-4">
-          <Stat label="Income (month)" value={stats.income} />
-          <Stat label="Expenses (month)" value={stats.expenses} />
-          <Stat label="Budget set" value={stats.budget} />
-          <Stat label="Budget status" value={stats.overBudget} />
-          <Stat label="Total saved" value={stats.saved} />
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Sticky top section */}
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <PageHeader
+            title="Finance"
+            description="Manage your budgets, transactions and savings"
+          />
+          <Button onClick={handleAdd} className="gap-2">
+            <Plus className="h-4 w-4" />
+            {addLabel}
+          </Button>
         </div>
-      </Card>
 
-      {/* ------------------------------------------------------------------ */}
-      {/* Tabs + View toggle                                                   */}
-      {/* ------------------------------------------------------------------ */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList>
-            <TabsTrigger value="overview">Budgets</TabsTrigger>
-            <TabsTrigger value="transactions">Transactions</TabsTrigger>
-            <TabsTrigger value="savings">Savings</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        {/* Tabs + View toggle */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList
+              className={`h-auto bg-transparent border p-1 ${
+                isMobile ? "w-full" : ""
+              }`}
+            >
+              <TabsTrigger value="overview" className="px-3 py-1.5">
+                Budgets
+              </TabsTrigger>
 
-        <div className="flex items-center gap-1 rounded-lg border p-1">
-          <Button
-            variant={viewMode === "grid" ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => setViewMode("grid")}
-            className="gap-1.5"
-          >
-            <LayoutGrid className="size-4" />
-            <span className="sr-only sm:not-sr-only">Grid</span>
-          </Button>
-          <Button
-            variant={viewMode === "list" ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => setViewMode("list")}
-            className="gap-1.5"
-          >
-            <List className="size-4" />
-            <span className="sr-only sm:not-sr-only">List</span>
-          </Button>
+              <TabsTrigger value="transactions" className="px-3 py-1.5">
+                Transactions
+              </TabsTrigger>
+
+              <TabsTrigger value="savings" className="px-3 py-1.5">
+                Savings
+              </TabsTrigger>
+
+              <TabsTrigger value="analytics" className="px-3 py-1.5">
+                Analytics
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          {!isMobile && (
+            <Tabs
+              value={viewMode}
+              onValueChange={(v) => setViewMode(v as "grid" | "list")}
+            >
+              <TabsList className="h-auto bg-transparent border p-1">
+                <TabsTrigger value="grid" className="gap-1.5 px-3 py-1.5">
+                  <LayoutGrid className="size-4" />
+                  <span className="sr-only sm:not-sr-only">Grid</span>
+                </TabsTrigger>
+
+                <TabsTrigger value="list" className="gap-1.5 px-3 py-1.5">
+                  <List className="size-4" />
+                  <span className="sr-only sm:not-sr-only">List</span>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          )}
         </div>
       </div>
 
-      {/* ------------------------------------------------------------------ */}
-      {/* Tab content                                                          */}
-      {/* ------------------------------------------------------------------ */}
-      {activeTab === "overview" && (
-        <BudgetsOverview
-          viewMode={viewMode}
-          userEmail={currentEmail}
-          onAddBudget={() => router.push("/finance/budget/add")}
-        />
-      )}
-      {activeTab === "transactions" && (
-        <TransactionsSection
-          viewMode={viewMode}
-          userEmail={currentEmail}
-          onImportTransaction={() => setStDialogOpen(true)}
-        />
-      )}
-      {activeTab === "savings" && (
-        <SavingsSection viewMode={viewMode} userEmail={currentEmail} />
-      )}
-
-      {activeTab === "analytics" && <BudgetAnalytics />}
-
-      {/* ------------------------------------------------------------------ */}
-      {/* Dialogs                                                              */}
-      {/* ------------------------------------------------------------------ */}
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-y-auto">
+        {activeTab === "overview" && (
+          <BudgetsOverview
+            viewMode={viewMode}
+            userEmail={currentEmail}
+            onAddBudget={() => router.push("/finance/budget/add")}
+          />
+        )}
+        {activeTab === "transactions" && (
+          <TransactionsSection
+            viewMode={viewMode}
+            userEmail={currentEmail}
+            onImportTransaction={() => setStDialogOpen(true)}
+          />
+        )}
+        {activeTab === "savings" && (
+          <SavingsSection viewMode={viewMode} userEmail={currentEmail} />
+        )}
+        {activeTab === "analytics" && <BudgetAnalytics />}
+      </div>
 
       <StatementImportDialog
         open={stDialogOpen}

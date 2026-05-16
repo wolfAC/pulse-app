@@ -102,25 +102,18 @@ export function ReviewCard({ review, onEdit, onDelete }: ReviewCardProps) {
 
   return (
     <Card className="group relative overflow-hidden transition-all hover:border-primary/50">
-      {/* Timeline indicator */}
-      <div
-        className={cn(
-          "absolute left-0 top-0 bottom-0 w-1 bg-linear-to-b",
-          styles.indicator,
-        )}
-      />
-
       <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
         <CardHeader className="pb-3 pl-5">
+          {/* Top row */}
           <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 min-w-0">
               <RadialScore
                 score={review.overallScore}
                 size="md"
                 color={styles.radialColor}
               />
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 flex-wrap">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap mb-1">
                   <Badge
                     variant="outline"
                     className={cn("text-xs", styles.period)}
@@ -134,14 +127,16 @@ export function ReviewCard({ review, onEdit, onDelete }: ReviewCardProps) {
                     Score: {review.overallScore}
                   </Badge>
                 </div>
-                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                  <Calendar className="h-3.5 w-3.5" />
-                  {formatReviewDate(review.createdAt)}
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground min-w-0">
+                  <Calendar className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate text-xs">
+                    {formatReviewDate(review.createdAt)}
+                  </span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 shrink-0">
               <Button
                 variant="ghost"
                 size="icon"
@@ -196,8 +191,10 @@ export function ReviewCard({ review, onEdit, onDelete }: ReviewCardProps) {
             </div>
           </div>
 
-          {/* Metrics Overview */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pl-1">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pl-1 pt-4 border-t border-border" />
+
+          {/* Metrics — 2 cols on mobile, 4 on sm+ */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pl-1">
             {(
               Object.keys(review.metrics) as Array<keyof typeof review.metrics>
             ).map((key) => {
@@ -206,8 +203,8 @@ export function ReviewCard({ review, onEdit, onDelete }: ReviewCardProps) {
               return (
                 <div key={key} className="space-y-1.5">
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Icon className="h-3.5 w-3.5" />
-                    <span>{metricLabels[key]}</span>
+                    <Icon className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">{metricLabels[key]}</span>
                   </div>
                   <Progress
                     value={value}
@@ -221,8 +218,11 @@ export function ReviewCard({ review, onEdit, onDelete }: ReviewCardProps) {
         </CardHeader>
 
         <CollapsibleContent>
+          <div className="pl-4 pr-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pl-1 pt-4 border-t border-border" />
+          </div>
+
           <CardContent className="pt-0 pl-5 space-y-4">
-            {/* Highlights */}
             {review.highlights.length > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm font-medium text-accent">
@@ -242,7 +242,6 @@ export function ReviewCard({ review, onEdit, onDelete }: ReviewCardProps) {
               </div>
             )}
 
-            {/* Blockers */}
             {review.blockers.length > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm font-medium text-destructive">
@@ -262,7 +261,6 @@ export function ReviewCard({ review, onEdit, onDelete }: ReviewCardProps) {
               </div>
             )}
 
-            {/* Improvements */}
             {review.improvements.length > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm font-medium text-primary">
@@ -282,7 +280,6 @@ export function ReviewCard({ review, onEdit, onDelete }: ReviewCardProps) {
               </div>
             )}
 
-            {/* Notes */}
             {review.notes && (
               <div className="rounded-lg bg-muted/30 p-3 text-sm text-muted-foreground">
                 {review.notes}

@@ -5,7 +5,7 @@ interface PageHeaderProps {
 
 export const PageHeader = ({ title, description }: PageHeaderProps) => {
   return (
-    <div className="space-y-1">
+    <div className="mb-4">
       <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
       <p className="text-muted-foreground">{description}</p>
     </div>
