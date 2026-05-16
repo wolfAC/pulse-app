@@ -1,13 +1,5 @@
 "use client";
 
-/**
- * StatementImportDialog — fully responsive
- * - Mobile  : bottom-sheet Drawer (touch-friendly, full-width)
- * - Tablet+ : centered Dialog (max-w-lg)
- *
- * All original logic is preserved; only the shell + layout is updated.
- */
-
 import { useCallback, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { nanoid } from "@reduxjs/toolkit";
@@ -24,8 +16,6 @@ import {
   Clock,
   Timer,
 } from "lucide-react";
-
-/* ── Dialog (md+) ─────────────────────────────────────────────────────────── */
 import {
   Dialog,
   DialogContent,
@@ -34,8 +24,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
-/* ── Drawer (mobile) ──────────────────────────────────────────────────────── */
 import {
   Drawer,
   DrawerContent,
@@ -44,7 +32,6 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -56,6 +43,7 @@ import { Transaction } from "@/lib/types/finance";
 import { RootState } from "@/store/index";
 import { useStatementParser } from "@/hooks/use-statement-parser";
 import type { ParsedRow } from "@/workers/statement-parser.worker";
+import { mapCategory } from "@/lib/finance/category-mapper";
 
 // ─── Provider metadata ────────────────────────────────────────────────────────
 
@@ -76,39 +64,7 @@ export const PROVIDERS = [
   },
 ] as const;
 
-// ─── Category heuristics ──────────────────────────────────────────────────────
-
-const CATEGORY_RULES: { patterns: RegExp[]; category: string }[] = [
-  { patterns: [/tangedco|electricity|power/i], category: "Electricity" },
-  {
-    patterns: [/bsnl|jio|airtel|sun direct|recharge|mobile/i],
-    category: "Utilities",
-  },
-  { patterns: [/amazon|flipkart|myntra|meesho/i], category: "Shopping" },
-  {
-    patterns: [/swiggy|zomato|food|restaurant|cafe|bakery|hotel/i],
-    category: "Food & Dining",
-  },
-  {
-    patterns: [/milk|grocery|store|mart|supermart|avenue/i],
-    category: "Groceries",
-  },
-  {
-    patterns: [/railway|railways|uts|train|bus|cab|ola|uber|cumta/i],
-    category: "Transport",
-  },
-  { patterns: [/jewel|gold|silver/i], category: "Jewellery" },
-  { patterns: [/salary|payroll|stipend/i], category: "Salary" },
-  { patterns: [/amazon pay later|loan|emi|credit/i], category: "Loan / EMI" },
-];
-
-function categorise(counterParty: string, details: string): string {
-  const h = `${counterParty} ${details}`.toLowerCase();
-  for (const rule of CATEGORY_RULES) {
-    if (rule.patterns.some((p) => p.test(h))) return rule.category;
-  }
-  return "Miscellaneous";
-}
+// ─── Formatters ───────────────────────────────────────────────────────────────
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-IN", {
@@ -134,7 +90,6 @@ function fmtDuration(ms: number): string {
 type Step = "select-provider" | "upload" | "parsing" | "preview" | "done";
 
 // ─── Shared inner content ─────────────────────────────────────────────────────
-// Extracted so the same JSX works inside both Dialog and Drawer shells.
 
 interface ContentProps {
   derivedStep: Step;
@@ -157,13 +112,13 @@ interface ContentProps {
   onDrop: (e: React.DragEvent) => void;
   onBack: () => void;
   onReset: () => void;
+  onSelectProvider: (id: string) => void; // ← new
 }
 
 function StepContent({
   derivedStep,
   parser,
   selectedProvider,
-  providerId,
   fileName,
   parseDurationMs,
   includeSelf,
@@ -176,6 +131,7 @@ function StepContent({
   handleFile,
   onDrop,
   onBack,
+  onSelectProvider, // ← new
 }: ContentProps) {
   /* ── Select provider ── */
   if (derivedStep === "select-provider") {
@@ -184,13 +140,8 @@ function StepContent({
         {PROVIDERS.map((p) => (
           <button
             key={p.id}
-            onClick={() => {
-              /* handled by parent via providerId setter + step setter */
-              // We bubble via a custom event since we extracted the step setter
-              // Actually: keep provider selection inline here — parent passes setters via onProviderSelect
-              // Simpler: use a data attribute & let parent attach onClick
-            }}
-            data-provider-id={p.id}
+            type="button"
+            onClick={() => onSelectProvider(p.id)} // ← direct, no delegation
             className="flex w-full items-center gap-3 rounded-xl border border-border p-4 text-left transition-colors hover:bg-muted/60 active:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-16"
           >
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-lg">
@@ -207,7 +158,7 @@ function StepContent({
         <p className="text-xs text-center text-muted-foreground pt-1">
           Don&apos;t see your bank?{" "}
           <span
-            data-provider-id=""
+            onClick={() => onSelectProvider("")} // ← auto-detect
             className="text-primary cursor-pointer underline underline-offset-2"
           >
             Auto-detect from PDF
@@ -222,6 +173,7 @@ function StepContent({
     return (
       <div className="space-y-4">
         <button
+          type="button"
           onClick={onBack}
           className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground active:text-foreground transition-colors"
         >
@@ -289,7 +241,6 @@ function StepContent({
   if (derivedStep === "preview") {
     return (
       <div className="space-y-3">
-        {/* Summary chips */}
         <div className="grid grid-cols-3 gap-2">
           {[
             { label: "Found", value: String(visibleRows.length), color: "" },
@@ -314,7 +265,6 @@ function StepContent({
           ))}
         </div>
 
-        {/* Meta row */}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <div className="flex items-center gap-1.5 min-w-0">
             <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
@@ -333,7 +283,6 @@ function StepContent({
           )}
         </div>
 
-        {/* Self-transfer toggle */}
         {selfRows.length > 0 && (
           <div className="flex items-center justify-between rounded-xl border border-border bg-muted/30 px-3 py-3 gap-3">
             <div className="flex items-center gap-2 min-w-0">
@@ -359,7 +308,6 @@ function StepContent({
           </div>
         )}
 
-        {/* Transaction list — height capped, scrollable */}
         <div className="max-h-[36vh] space-y-1.5 overflow-y-auto pr-0.5 -mr-1 overscroll-contain">
           {visibleRows.map((row, idx) => (
             <div
@@ -394,9 +342,9 @@ function StepContent({
                 <p className="text-[11px] text-muted-foreground leading-snug">
                   {row.date}
                   {row.bank ? ` · ${row.bank}` : ""}
-                  {row.type !== "self"
-                    ? ` · ${categorise(row.counterParty, row.details)}`
-                    : " · Self Transfer"}
+                  {row.type === "self"
+                    ? " · Self Transfer"
+                    : ` · ${mapCategory(row.type, row.counterParty, row.details)}`}
                 </p>
               </div>
               <span
@@ -428,7 +376,6 @@ function StepContent({
         <div>
           <p className="text-base font-semibold">Import successful!</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {/* importedCount passed via parent */}
             Transactions added to your account.
           </p>
           {parseDurationMs > 0 && (
@@ -458,7 +405,7 @@ export function StatementImportDialog({
   const currentEmail = useSelector((s: RootState) => s.auth.currentEmail);
   const parser = useStatementParser();
   const fileRef = useRef<HTMLInputElement>(null);
-  const isDesktop = !useIsMobile();
+  const isMobile = useIsMobile();
 
   const [step, setStep] = useState<Step>("select-provider");
   const [providerId, setProviderId] = useState("");
@@ -520,6 +467,12 @@ export function StatementImportDialog({
     [handleFile],
   );
 
+  // ← The key fix: direct handler passed as prop, no delegation
+  const handleSelectProvider = useCallback((id: string) => {
+    setProviderId(id);
+    setStep("upload");
+  }, []);
+
   const regularRows = parser.rows.filter((r) => r.type !== "self");
   const selfRows = parser.rows.filter((r) => r.type === "self");
   const visibleRows = includeSelf ? parser.rows : regularRows;
@@ -538,29 +491,32 @@ export function StatementImportDialog({
 
     const transactions: Transaction[] = visibleRows
       .filter((r: ParsedRow) => r.type !== "self" || includeSelf)
-      .map((row: ParsedRow) => ({
-        id: nanoid(),
-        userEmail: currentEmail as Transaction["userEmail"],
-        type: (row.type === "self" ? "expense" : row.type) as
+      .map((row: ParsedRow) => {
+        const txType = (row.type === "self" ? "expense" : row.type) as
           | "income"
-          | "expense",
-        amount: row.amount,
-        category:
-          row.type === "self"
-            ? "Self Transfer"
-            : categorise(row.counterParty, row.details),
-        note: `${label} – Ref: ${row.refId}`,
-        counterParty: row.counterParty,
-        bankName: row.bank || selectedProvider?.label,
-        account: row.bank,
-        tags: [
-          "imported",
-          providerId || parser.detectedProvider,
-          ...(row.type === "self" ? ["self-transfer"] : []),
-        ],
-        source: source as Transaction["source"],
-        createdAt: toTimestamp(row.date, row.time),
-      }));
+          | "expense";
+        return {
+          id: nanoid(),
+          userEmail: currentEmail as Transaction["userEmail"],
+          type: txType,
+          amount: row.amount,
+          category:
+            row.type === "self"
+              ? "Other"
+              : mapCategory(txType, row.counterParty, row.details),
+          note: `${label} – Ref: ${row.refId}`,
+          counterParty: row.counterParty,
+          bankName: row.bank || selectedProvider?.label,
+          account: row.bank,
+          tags: [
+            "imported",
+            providerId || parser.detectedProvider,
+            ...(row.type === "self" ? ["self-transfer"] : []),
+          ],
+          source: source as Transaction["source"],
+          createdAt: toTimestamp(row.date, row.time),
+        };
+      });
 
     dispatch(addManyTransactions(transactions));
     setImportedCount(transactions.length);
@@ -581,18 +537,6 @@ export function StatementImportDialog({
     preview: "Review transactions before importing.",
   };
 
-  // ── Provider click handler (delegated) ────────────────────────────────────
-  const handleProviderClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const btn = (e.target as HTMLElement).closest(
-      "[data-provider-id]",
-    ) as HTMLElement | null;
-    if (!btn) return;
-    const id = btn.dataset.providerId ?? "";
-    setProviderId(id);
-    setStep("upload");
-  };
-
-  // ── Shared footer buttons ─────────────────────────────────────────────────
   const footerButtons = (
     <>
       {(derivedStep === "select-provider" || derivedStep === "upload") && (
@@ -635,44 +579,36 @@ export function StatementImportDialog({
     </>
   );
 
-  // ── Shared body ───────────────────────────────────────────────────────────
-  // Provider selection uses event delegation so StepContent doesn't need setters.
-  const body = (
-    <div
-      onClick={
-        derivedStep === "select-provider" ? handleProviderClick : undefined
-      }
-    >
-      <StepContent
-        derivedStep={derivedStep}
-        step={step}
-        parser={parser}
-        selectedProvider={selectedProvider}
-        providerId={providerId}
-        fileName={fileName}
-        parseDurationMs={parseDurationMs}
-        includeSelf={includeSelf}
-        selfRows={selfRows}
-        regularRows={regularRows}
-        visibleRows={visibleRows}
-        income={income}
-        expenses={expenses}
-        importedCount={importedCount}
-        fileRef={fileRef}
-        setIncludeSelf={setIncludeSelf}
-        handleFile={handleFile}
-        onDrop={onDrop}
-        onBack={() => {
-          parser.reset();
-          setStep("select-provider");
-        }}
-        onReset={reset}
-      />
-    </div>
+  const stepContent = (
+    <StepContent
+      derivedStep={derivedStep}
+      step={step}
+      parser={parser}
+      selectedProvider={selectedProvider}
+      providerId={providerId}
+      fileName={fileName}
+      parseDurationMs={parseDurationMs}
+      includeSelf={includeSelf}
+      selfRows={selfRows}
+      regularRows={regularRows}
+      visibleRows={visibleRows}
+      income={income}
+      expenses={expenses}
+      importedCount={importedCount}
+      fileRef={fileRef}
+      setIncludeSelf={setIncludeSelf}
+      handleFile={handleFile}
+      onDrop={onDrop}
+      onBack={() => {
+        parser.reset();
+        setStep("select-provider");
+      }}
+      onReset={reset}
+      onSelectProvider={handleSelectProvider} // ← passed directly
+    />
   );
 
-  // ── Desktop: Dialog ───────────────────────────────────────────────────────
-  if (isDesktop) {
+  if (!isMobile) {
     return (
       <Dialog
         open={open}
@@ -687,7 +623,7 @@ export function StatementImportDialog({
               <DialogDescription>{descriptions[derivedStep]}</DialogDescription>
             )}
           </DialogHeader>
-          <div className="mt-2">{body}</div>
+          <div className="mt-2">{stepContent}</div>
           <DialogFooter className="mt-4 flex-col-reverse sm:flex-row gap-2">
             {footerButtons}
           </DialogFooter>
@@ -696,7 +632,6 @@ export function StatementImportDialog({
     );
   }
 
-  // ── Mobile: Drawer (bottom sheet) ────────────────────────────────────────
   return (
     <Drawer
       open={open}
@@ -704,23 +639,16 @@ export function StatementImportDialog({
         if (!o) close();
       }}
     >
-      <DrawerContent
-        /* prevent the drawer from being dragged to close mid-scroll */
-        className="max-h-[92dvh] flex flex-col"
-      >
-        {/* Drag handle is rendered by DrawerContent automatically */}
+      <DrawerContent className="max-h-[92dvh] flex flex-col">
         <DrawerHeader className="text-left px-4 pt-2 pb-0">
           <DrawerTitle>{titles[derivedStep]}</DrawerTitle>
           {descriptions[derivedStep] && (
             <DrawerDescription>{descriptions[derivedStep]}</DrawerDescription>
           )}
         </DrawerHeader>
-
-        {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto px-4 py-3 overscroll-contain">
-          {body}
+          {stepContent}
         </div>
-
         <DrawerFooter className="px-4 pb-6 pt-2 flex flex-col gap-2 border-t border-border">
           {footerButtons}
         </DrawerFooter>
