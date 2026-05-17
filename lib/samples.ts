@@ -2,6 +2,32 @@ import type { Goal } from "@/lib/types/goal";
 import type { Review } from "@/lib/types/performance";
 import type { HealthEntry, Workout } from "@/lib/types/health";
 import type { Budget, SavingsGoal, Transaction } from "@/lib/types/finance";
+import { UserProfile } from "./types/auth";
+
+// Helper to get past dates for habit streaks
+function pastDate(daysAgo: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() - daysAgo);
+  return d.toISOString().split("T")[0];
+}
+
+export const sampleUser: UserProfile[] = [
+  {
+    email: "tester.pulse@gmail.com",
+    name: "Tester",
+    pin: "000000",
+    selectedGoals: [
+      "productivity",
+      "health",
+      "performance",
+      "learning",
+      "fitness",
+      "sleep",
+    ],
+    createdAt: 1779011476058,
+    avatar: "/avatars/tester.png",
+  },
+];
 
 export const sampleGoals: Goal[] = [
   {
@@ -13,6 +39,7 @@ export const sampleGoals: Goal[] = [
     progress: 65,
     priority: "high",
     status: "active",
+    type: "goal",
     dueDate: "2026-06-15",
     milestones: [
       { id: "m1", title: "Complete basics course", completed: true },
@@ -34,6 +61,7 @@ export const sampleGoals: Goal[] = [
     progress: 40,
     priority: "medium",
     status: "active",
+    type: "goal",
     dueDate: "2026-11-20",
     milestones: [
       { id: "m4", title: "Run 10K", completed: true },
@@ -55,6 +83,7 @@ export const sampleGoals: Goal[] = [
     progress: 25,
     priority: "low",
     status: "active",
+    type: "goal",
     dueDate: "2026-12-31",
     milestones: [
       { id: "m7", title: "Read 6 books", completed: true },
@@ -77,6 +106,7 @@ export const sampleGoals: Goal[] = [
     progress: 100,
     priority: "high",
     status: "completed",
+    type: "goal",
     dueDate: "2026-03-01",
     milestones: [
       { id: "m10", title: "Complete fundamentals", completed: true },
@@ -87,6 +117,79 @@ export const sampleGoals: Goal[] = [
       { id: "t10", title: "Watch all videos", completed: true },
       { id: "t11", title: "Complete exercises", completed: true },
       { id: "t12", title: "Submit final project", completed: true },
+    ],
+    createdAt: +new Date(),
+  },
+
+  // ── Habits ──────────────────────────────────────────────
+  {
+    id: "5",
+    userEmail: "wolf8132609@gmail.com",
+    title: "Practice Keyboard",
+    description:
+      "Practice typing or piano keyboard for at least 20 minutes daily.",
+    progress: 0,
+    priority: "high",
+    status: "active",
+    type: "habit",
+    // 9-day streak ending today, with a couple of gaps earlier in month
+    completedDates: [
+      pastDate(0),
+      pastDate(1),
+      pastDate(2),
+      pastDate(3),
+      pastDate(4),
+      pastDate(5),
+      pastDate(6),
+      pastDate(7),
+      pastDate(8),
+      pastDate(10),
+      pastDate(11),
+      pastDate(14),
+    ],
+    createdAt: +new Date(),
+  },
+  {
+    id: "6",
+    userEmail: "wolf8132609@gmail.com",
+    title: "Morning Meditation",
+    description: "10 minutes of mindfulness meditation every morning.",
+    progress: 0,
+    priority: "medium",
+    status: "active",
+    type: "habit",
+    // 3-day streak, patchy earlier
+    completedDates: [
+      pastDate(0),
+      pastDate(1),
+      pastDate(2),
+      pastDate(4),
+      pastDate(5),
+      pastDate(8),
+      pastDate(9),
+      pastDate(10),
+    ],
+    createdAt: +new Date(),
+  },
+  {
+    id: "7",
+    userEmail: "wolf8132609@gmail.com",
+    title: "Drink 2L Water",
+    description: "Stay hydrated by drinking at least 2 litres of water daily.",
+    progress: 0,
+    priority: "low",
+    status: "active",
+    type: "habit",
+    // missed today, 5-day streak before that
+    completedDates: [
+      pastDate(1),
+      pastDate(2),
+      pastDate(3),
+      pastDate(4),
+      pastDate(5),
+      pastDate(7),
+      pastDate(11),
+      pastDate(12),
     ],
     createdAt: +new Date(),
   },

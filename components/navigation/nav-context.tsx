@@ -31,5 +31,5 @@ export const primaryNavItems: NavItem[] = [
 
 export const secondaryNavItems: NavItem[] = [
   { label: "Settings", icon: Settings, href: "/settings" },
-  { label: "Help", icon: HelpCircle, href: "/help" },
+  { label: "Help", icon: HelpCircle, href: "/support" },
 ];

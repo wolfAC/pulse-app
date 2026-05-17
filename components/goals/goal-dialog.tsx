@@ -43,6 +43,7 @@ export function GoalDialog({
 }: GoalDialogProps) {
   const isEditing = !!goal;
 
+  const [type, setType] = useState<"goal" | "habit">("goal");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<Priority>("medium");
@@ -54,13 +55,15 @@ export function GoalDialog({
 
   useEffect(() => {
     if (goal) {
+      setType(goal.type ?? "goal");
       setTitle(goal.title);
       setDescription(goal.description);
       setPriority(goal.priority);
-      setDueDate(goal.dueDate);
+      setDueDate(goal.dueDate ?? "");
       setMilestones(goal.milestones ?? []);
       setTasks(goal.tasks ?? []);
     } else {
+      setType("goal");
       setTitle("");
       setDescription("");
       setPriority("medium");
@@ -73,18 +76,18 @@ export function GoalDialog({
   }, [goal, open]);
 
   const progress = (() => {
-    const total = milestones.length + tasks.length;
+    const total = (milestones?.length ?? 0) + (tasks?.length ?? 0);
     if (total === 0) return goal?.progress ?? 0;
     const done =
-      milestones.filter((m) => m.completed).length +
-      tasks.filter((t) => t.completed).length;
+      (milestones?.filter((m) => m.completed).length ?? 0) +
+      (tasks?.filter((t) => t.completed).length ?? 0);
     return Math.round((done / total) * 100);
   })();
 
   const addMilestone = () => {
     if (!newMilestone.trim()) return;
     setMilestones((prev) => [
-      ...prev,
+      ...(prev ?? []),
       {
         id: Date.now().toString(),
         title: newMilestone.trim(),
@@ -97,7 +100,7 @@ export function GoalDialog({
   const addTask = () => {
     if (!newTask.trim()) return;
     setTasks((prev) => [
-      ...prev,
+      ...(prev ?? []),
       { id: Date.now().toString(), title: newTask.trim(), completed: false },
     ]);
     setNewTask("");
@@ -105,32 +108,40 @@ export function GoalDialog({
 
   const toggleMilestone = (id: string) =>
     setMilestones((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, completed: !m.completed } : m)),
+      (prev ?? []).map((m) =>
+        m.id === id ? { ...m, completed: !m.completed } : m,
+      ),
     );
 
   const toggleTask = (id: string) =>
     setTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t)),
+      (prev ?? []).map((t) =>
+        t.id === id ? { ...t, completed: !t.completed } : t,
+      ),
     );
 
   const deleteMilestone = (id: string) =>
-    setMilestones((prev) => prev.filter((m) => m.id !== id));
+    setMilestones((prev) => (prev ?? []).filter((m) => m.id !== id));
 
   const deleteTask = (id: string) =>
-    setTasks((prev) => prev.filter((t) => t.id !== id));
+    setTasks((prev) => (prev ?? []).filter((t) => t.id !== id));
+
+  const isValid = type === "habit" ? !!title : !!title && !!dueDate;
 
   const handleSubmit = () => {
-    if (!title || !dueDate) return;
+    if (!isValid) return;
     onSave({
       ...(goal && { id: goal.id }),
+      type,
       title,
       description,
       priority,
-      dueDate,
+      ...(type === "goal" && { dueDate }),
       milestones,
       tasks,
       progress,
       ...(!isEditing ? { status: "active" as const } : {}),
+      ...(type === "habit" && { completedDates: goal?.completedDates ?? [] }),
     });
     onOpenChange(false);
   };
@@ -143,7 +154,7 @@ export function GoalDialog({
           <DialogDescription>
             {isEditing
               ? "Update goal details, milestones and tasks."
-              : "Set a new goal to track your progress."}
+              : "Set a new goal or daily habit to track your progress."}
           </DialogDescription>
         </DialogHeader>
 
@@ -155,10 +166,10 @@ export function GoalDialog({
             <TabsTrigger
               value="progress"
               className="flex-1"
-              disabled={!isEditing && !title}
+              disabled={type === "habit" || (!isEditing && !title)}
             >
               Progress{" "}
-              {isEditing && (
+              {isEditing && type === "goal" && (
                 <Badge variant="secondary" className="ml-2 text-xs">
                   {progress}%
                 </Badge>
@@ -168,15 +179,37 @@ export function GoalDialog({
 
           {/* ── Details tab ── */}
           <TabsContent value="details" className="mt-4 space-y-4">
+            {/* Habit toggle */}
+            <div className="flex items-center gap-2 rounded-md border p-3 bg-muted/40">
+              <Checkbox
+                id="habitToggle"
+                checked={type === "habit"}
+                onCheckedChange={(v) => setType(v ? "habit" : "goal")}
+              />
+              <div className="flex flex-col">
+                <Label htmlFor="habitToggle" className="cursor-pointer">
+                  Daily Habit
+                </Label>
+                <span className="text-xs text-muted-foreground">
+                  Track streaks and monthly completion instead of a due date
+                </span>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="title">Title</Label>
               <Input
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Learn a new language"
+                placeholder={
+                  type === "habit"
+                    ? "Practice keyboard daily"
+                    : "Learn a new language"
+                }
               />
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
               <Textarea
@@ -187,7 +220,10 @@ export function GoalDialog({
                 rows={3}
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+
+            <div
+              className={`grid gap-4 ${type === "goal" ? "grid-cols-2" : "grid-cols-1"}`}
+            >
               <div className="space-y-2">
                 <Label>Priority</Label>
                 <Select
@@ -204,19 +240,22 @@ export function GoalDialog({
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="dueDate">Due Date</Label>
-                <Input
-                  id="dueDate"
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                />
-              </div>
+
+              {type === "goal" && (
+                <div className="space-y-2">
+                  <Label htmlFor="dueDate">Due Date</Label>
+                  <Input
+                    id="dueDate"
+                    type="date"
+                    value={dueDate}
+                    onChange={(e) => setDueDate(e.target.value)}
+                  />
+                </div>
+              )}
             </div>
           </TabsContent>
 
-          {/* ── Progress tab ── */}
+          {/* ── Progress tab (goals only) ── */}
           <TabsContent value="progress" className="mt-4 space-y-5">
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
@@ -232,14 +271,16 @@ export function GoalDialog({
             <div className="space-y-3">
               <Label>Milestones</Label>
               <div className="space-y-2">
-                {milestones.map((m) => (
+                {(milestones ?? []).map((m) => (
                   <div key={m.id} className="flex items-center gap-2">
                     <Checkbox
                       checked={m.completed}
                       onCheckedChange={() => toggleMilestone(m.id)}
                     />
                     <span
-                      className={`flex-1 text-sm ${m.completed ? "line-through text-muted-foreground" : ""}`}
+                      className={`flex-1 text-sm ${
+                        m.completed ? "line-through text-muted-foreground" : ""
+                      }`}
                     >
                       {m.title}
                     </span>
@@ -281,14 +322,16 @@ export function GoalDialog({
             <div className="space-y-3">
               <Label>Tasks</Label>
               <div className="space-y-2">
-                {tasks.map((t) => (
+                {(tasks ?? []).map((t) => (
                   <div key={t.id} className="flex items-center gap-2">
                     <Checkbox
                       checked={t.completed}
                       onCheckedChange={() => toggleTask(t.id)}
                     />
                     <span
-                      className={`flex-1 text-sm ${t.completed ? "line-through text-muted-foreground" : ""}`}
+                      className={`flex-1 text-sm ${
+                        t.completed ? "line-through text-muted-foreground" : ""
+                      }`}
                     >
                       {t.title}
                     </span>
@@ -330,7 +373,7 @@ export function GoalDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={!title || !dueDate}>
+          <Button onClick={handleSubmit} disabled={!isValid}>
             {isEditing ? "Save Changes" : "Create Goal"}
           </Button>
         </DialogFooter>

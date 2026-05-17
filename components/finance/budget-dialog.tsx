@@ -18,55 +18,38 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { categories } from "@/lib/types/finance";
 import type { RootState } from "@/store/index";
 import { addBudget, updateBudget } from "@/store/slices/finance";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
-
-const EXPENSE_CATEGORIES = [
-  "Food",
-  "Transport",
-  "Housing",
-  "Utilities",
-  "Entertainment",
-  "Healthcare",
-  "Shopping",
-  "Education",
-  "Travel",
-  "Personal Care",
-  "Subscriptions",
-  "Other",
-];
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
+export interface BudgetFormData {
+  category: string;
+  limit: number;
+  month: string;
+}
+
 interface BudgetDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Pass a budget id to open in edit mode; omit / pass null for add mode */
   editingBudgetId?: string | null;
+  onSave?: (data: BudgetFormData) => void;
 }
 
-const emptyForm = {
-  category: "",
-  limit: "",
-  month: new Date().toISOString().slice(0, 7), // "YYYY-MM"
-};
-
 // ---------------------------------------------------------------------------
-// Component
+// Inner component (remounts on key change)
 // ---------------------------------------------------------------------------
 
-export function BudgetDialog({
+function BudgetDialogInner({
   open,
   onOpenChange,
   editingBudgetId = null,
+  onSave,
 }: BudgetDialogProps) {
   const dispatch = useDispatch();
 
@@ -81,22 +64,27 @@ export function BudgetDialog({
 
   const isEditing = Boolean(editingBudget);
 
-  const [form, setForm] = useState(emptyForm);
+  // Initialise directly from props — no useEffect needed
+  const [form, setForm] = useState(() =>
+    editingBudget
+      ? {
+          category: editingBudget.category,
+          limit: editingBudget.limit.toString(),
+          month: editingBudget.month,
+        }
+      : {
+          category: "",
+          limit: "",
+          month: new Date().toISOString().slice(0, 7),
+        },
+  );
 
-  // Pre-fill form when editing budget changes or dialog opens
-  useEffect(() => {
-    if (editingBudget) {
-      setForm({
-        category: editingBudget.category,
-        limit: editingBudget.limit.toString(),
-        month: editingBudget.month,
-      });
-    } else {
-      setForm(emptyForm);
-    }
-  }, [editingBudget, open]);
+  const setField =
+    (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
+      setForm((f) => ({ ...f, [key]: e.target.value }));
 
-  // Categories already budgeted this month for this user (excluding the one being edited)
+  const reset = () => onOpenChange(false);
+
   const usedCategories = budgets
     .filter(
       (b) =>
@@ -106,21 +94,32 @@ export function BudgetDialog({
     )
     .map((b) => b.category);
 
-  const availableCategories = EXPENSE_CATEGORIES.filter(
+  const availableCategories = categories?.expense?.filter(
     (c) => !usedCategories.includes(c),
   );
 
-  const setField =
-    (key: keyof typeof emptyForm) => (e: React.ChangeEvent<HTMLInputElement>) =>
-      setForm((f) => ({ ...f, [key]: e.target.value }));
-
-  const reset = () => {
-    setForm(emptyForm);
-    onOpenChange(false);
-  };
+  // In edit mode always show the current category even if used elsewhere
+  const safeCategory =
+    isEditing &&
+    editingBudget &&
+    !availableCategories.includes(form.category) &&
+    form.category
+      ? form.category
+      : availableCategories.includes(form.category)
+        ? form.category
+        : "";
 
   const handleSubmit = () => {
     if (!form.category || !form.limit || !currentEmail) return;
+
+    if (onSave) {
+      onSave({
+        category: form.category,
+        limit: parseFloat(form.limit),
+        month: form.month,
+      });
+      return;
+    }
 
     if (isEditing && editingBudget) {
       dispatch(
@@ -180,14 +179,13 @@ export function BudgetDialog({
           <div className="space-y-2">
             <Label>Category</Label>
             <Select
-              value={form.category}
+              value={safeCategory}
               onValueChange={(v) => setForm((f) => ({ ...f, category: v }))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
-                {/* In edit mode always show the current category even if already "used" */}
                 {isEditing &&
                   editingBudget &&
                   !availableCategories.includes(editingBudget.category) && (
@@ -225,7 +223,7 @@ export function BudgetDialog({
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={!form.category || !form.limit}
+            disabled={!safeCategory || !form.limit}
           >
             {isEditing ? "Update Budget" : "Create Budget"}
           </Button>
@@ -233,4 +231,12 @@ export function BudgetDialog({
       </DialogContent>
     </Dialog>
   );
+}
+
+// ---------------------------------------------------------------------------
+// Exported wrapper — key forces full remount per budget / new
+// ---------------------------------------------------------------------------
+
+export function BudgetDialog(props: BudgetDialogProps) {
+  return <BudgetDialogInner key={props.editingBudgetId ?? "new"} {...props} />;
 }

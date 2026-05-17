@@ -15,7 +15,7 @@ const authSlice = createSlice({
       const { email } = action.payload;
       state.users[email] = {
         ...action.payload,
-        createdAt: state.users[email]?.createdAt ?? new Date().toISOString(),
+        createdAt: state.users[email]?.createdAt ?? +new Date(),
       };
     },
 

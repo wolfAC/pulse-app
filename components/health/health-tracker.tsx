@@ -1,22 +1,23 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { NavTabs } from "@/components/ui/nav-tabs";
 import { PageHeader } from "@/components/ui/page-header";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ViewToggle } from "@/components/ui/view-toggle";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { RootState } from "@/store/index";
-import { LayoutGrid, List, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { HealthLogs } from "./health-logs";
 import { HealthOverview } from "./health-overview";
 import { WorkoutsSection } from "./workouts-section";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 export function HealthTracker() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("overview");
-  const [viewMode, setViewMode] = useState("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const isMobile = useIsMobile();
 
   const currentEmail = useSelector(
@@ -42,43 +43,18 @@ export function HealthTracker() {
         </div>
 
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList
-              className={`h-auto bg-transparent border p-1 ${
-                isMobile ? "w-full" : ""
-              }`}
-            >
-              <TabsTrigger value="overview" className="px-3 py-1.5">
-                Overview
-              </TabsTrigger>
-
-              <TabsTrigger value="logs" className="px-3 py-1.5">
-                Logs
-              </TabsTrigger>
-
-              <TabsTrigger value="workouts" className="px-3 py-1.5">
-                Workouts
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <NavTabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            tabs={[
+              { value: "overview", label: "Overview" },
+              { value: "logs", label: "Logs" },
+              { value: "workouts", label: "Workouts" },
+            ]}
+          />
 
           {!isMobile && (
-            <Tabs
-              value={viewMode}
-              onValueChange={(v) => setViewMode(v as "grid" | "list")}
-            >
-              <TabsList className="h-auto bg-transparent border p-1">
-                <TabsTrigger value="grid" className="gap-1.5 px-3 py-1.5">
-                  <LayoutGrid className="size-4" />
-                  <span className="sr-only sm:not-sr-only">Grid</span>
-                </TabsTrigger>
-
-                <TabsTrigger value="list" className="gap-1.5 px-3 py-1.5">
-                  <List className="size-4" />
-                  <span className="sr-only sm:not-sr-only">List</span>
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+            <ViewToggle value={viewMode} onValueChange={setViewMode} />
           )}
         </div>
       </div>

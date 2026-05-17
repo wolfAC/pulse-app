@@ -21,10 +21,10 @@ import {
   TrendingUp,
   Wallet,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { BudgetDialog } from "./budget-dialog";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useRouter } from "next/navigation";
 
 // ─── Formatters ───────────────────────────────────────────────────────────────
 
@@ -35,7 +35,6 @@ const fmt = (n: number) =>
     maximumFractionDigits: 0,
   }).format(n);
 
-/** Compact: ₹1.2L / ₹45K / ₹800 — used inside the narrow summary strip */
 const fmtCompact = (n: number) => {
   if (n >= 100_000) return `₹${(n / 100_000).toFixed(1)}L`;
   if (n >= 1_000) return `₹${(n / 1_000).toFixed(0)}K`;
@@ -131,6 +130,7 @@ export function BudgetsOverview({
   onAddBudget,
 }: BudgetsOverviewProps) {
   const dispatch = useDispatch();
+  const router = useRouter();
   const allBudgets = useSelector((state: RootState) => state.finance.budgets);
   const allTransactions = useSelector(
     (state: RootState) => state.finance.transactions,
@@ -138,8 +138,6 @@ export function BudgetsOverview({
   const isMobile = useIsMobile();
 
   const currentMonth = new Date().toISOString().slice(0, 7);
-  const [editingBudgetId, setEditingBudgetId] = useState<string | null>(null);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const budgets = useMemo(
     () =>
@@ -178,11 +176,6 @@ export function BudgetsOverview({
     const overBudgetCount = enriched.filter((b) => b.spent > b.limit).length;
     return { totalBudget, totalSpent, overBudgetCount };
   }, [enriched]);
-
-  const openEdit = (id: string) => {
-    setEditingBudgetId(id);
-    setEditDialogOpen(true);
-  };
 
   const overAlert = stats.overBudgetCount > 0 && (
     <Alert variant="destructive">
@@ -238,8 +231,10 @@ export function BudgetsOverview({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7"
-                          onClick={() => openEdit(b.id)}
+                          className="h-7 w-7 text-muted-foreground hover:text-primary"
+                          onClick={() =>
+                            router.push(`/finance/budget/edit/${b.id}`)
+                          }
                         >
                           <Pencil className="h-3.5 w-3.5" />
                         </Button>
@@ -278,8 +273,10 @@ export function BudgetsOverview({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7"
-                        onClick={() => openEdit(b.id)}
+                        className="h-7 w-7 text-muted-foreground hover:text-primary"
+                        onClick={() =>
+                          router.push(`/finance/budget/edit/${b.id}`)
+                        }
                       >
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
@@ -298,12 +295,6 @@ export function BudgetsOverview({
             )}
           </CardContent>
         </Card>
-
-        <BudgetDialog
-          open={editDialogOpen}
-          onOpenChange={setEditDialogOpen}
-          editingBudgetId={editingBudgetId}
-        />
       </div>
     );
   }
@@ -313,7 +304,6 @@ export function BudgetsOverview({
     <div className="space-y-4">
       {overAlert}
 
-      {/* Summary — conditionally rendered based on screen size */}
       {isMobile ? (
         <SummaryStrip {...stats} />
       ) : (
@@ -359,7 +349,6 @@ export function BudgetsOverview({
         </div>
       )}
 
-      {/* Budget cards — original design */}
       {enriched.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
@@ -392,8 +381,10 @@ export function BudgetsOverview({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8"
-                        onClick={() => openEdit(b.id)}
+                        className="h-8 w-8 text-muted-foreground hover:text-primary"
+                        onClick={() =>
+                          router.push(`/finance/budget/edit/${b.id}`)
+                        }
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -456,12 +447,6 @@ export function BudgetsOverview({
           })}
         </div>
       )}
-
-      <BudgetDialog
-        open={editDialogOpen}
-        onOpenChange={setEditDialogOpen}
-        editingBudgetId={editingBudgetId}
-      />
     </div>
   );
 }

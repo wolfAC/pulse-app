@@ -1,8 +1,8 @@
 export interface UserProfile {
   email: string;
   name: string;
-  pin: string; // hashed/stored locally; treat as opaque
-  createdAt: string;
+  pin: string;
+  createdAt: number;
   selectedGoals: string[];
   avatar?: string;
 }

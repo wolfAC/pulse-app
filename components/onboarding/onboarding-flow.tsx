@@ -42,6 +42,9 @@ import {
   PiggyBank,
   BarChart3,
   DollarSign,
+  Lock,
+  ShieldCheck,
+  Smartphone,
 } from "lucide-react";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
@@ -54,6 +57,7 @@ interface GoalPreset {
   id: string;
   title: string;
   description: string;
+  example: string;
   icon: React.ReactNode;
   color: string;
 }
@@ -61,43 +65,49 @@ interface GoalPreset {
 const goalPresets: GoalPreset[] = [
   {
     id: "productivity",
-    title: "Boost Productivity",
-    description: "Track tasks and improve focus",
+    title: "Be More Productive",
+    description: "Manage tasks and stay focused",
+    example: 'e.g. "Did I finish my top 3 tasks today?"',
     icon: <Zap className="h-5 w-5" />,
     color: "bg-amber-500/10 text-amber-500 border-amber-500/20",
   },
   {
     id: "health",
-    title: "Improve Health",
-    description: "Monitor fitness and wellness",
+    title: "Improve My Health",
+    description: "Log water, sleep, and calories",
+    example: 'e.g. "Did I drink 2L of water today?"',
     icon: <Heart className="h-5 w-5" />,
     color: "bg-rose-500/10 text-rose-500 border-rose-500/20",
   },
   {
     id: "performance",
-    title: "Track Performance",
-    description: "Measure work achievements",
+    title: "Track My Work",
+    description: "Review daily and weekly wins",
+    example: 'e.g. "How productive was this week?"',
     icon: <TrendingUp className="h-5 w-5" />,
     color: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
   },
   {
     id: "learning",
-    title: "Learn New Skills",
-    description: "Set learning milestones",
+    title: "Learn Something New",
+    description: "Set milestones for new skills",
+    example: 'e.g. "Practice keyboard for 20 mins daily"',
     icon: <BookOpen className="h-5 w-5" />,
     color: "bg-blue-500/10 text-blue-500 border-blue-500/20",
   },
   {
     id: "fitness",
     title: "Get Fit",
-    description: "Exercise and activity goals",
+    description: "Log workouts and stay active",
+    example: 'e.g. "Did I exercise today?"',
     icon: <Dumbbell className="h-5 w-5" />,
     color: "bg-purple-500/10 text-purple-500 border-purple-500/20",
   },
   {
     id: "sleep",
-    title: "Better Sleep",
-    description: "Improve sleep quality",
+    title: "Sleep Better",
+    description: "Track sleep hours and quality",
+    example: 'e.g. "Did I sleep 7+ hours last night?"',
     icon: <Moon className="h-5 w-5" />,
     color: "bg-indigo-500/10 text-indigo-500 border-indigo-500/20",
   },
@@ -122,8 +132,42 @@ const steps = [
   { id: 5, title: "Finish" },
 ];
 
-// Fixed card body height — profile step is tallest, all others match it
-const CARD_BODY_CLASS = "h-[480px] flex flex-col";
+const CARD_BODY_CLASS = "h-[560px] sm:h-[600px] lg:h-[640px] flex flex-col";
+
+// Plain-language feature descriptions for the welcome screen
+const features = [
+  {
+    icon: <Wallet className="h-5 w-5 text-emerald-500" />,
+    title: "Track your spending",
+    description: "Log expenses and see where your money goes each month",
+  },
+  {
+    icon: <Target className="h-5 w-5 text-primary" />,
+    title: "Hit your goals",
+    description: "Set targets with due dates and tick off milestones as you go",
+  },
+  {
+    icon: <Zap className="h-5 w-5 text-amber-500" />,
+    title: "Build daily habits",
+    description:
+      "Track streaks for things like reading, exercise, or hydration",
+  },
+  {
+    icon: <Heart className="h-5 w-5 text-rose-500" />,
+    title: "Monitor your health",
+    description: "Log sleep, steps, water, and workouts in one place",
+  },
+  {
+    icon: <BarChart3 className="h-5 w-5 text-violet-500" />,
+    title: "Review your performance",
+    description: "Rate your day or week and spot patterns over time",
+  },
+  {
+    icon: <PiggyBank className="h-5 w-5 text-amber-500" />,
+    title: "Save toward dreams",
+    description: "Set savings targets and watch your progress grow",
+  },
+];
 
 export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const dispatch = useDispatch();
@@ -149,7 +193,6 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   // goals
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
 
-  // ── validation ────────────────────────────────────────────────────────────
   const validateStep2 = () => {
     const newErrors: { name?: string; email?: string; pin?: string } = {};
     if (!name.trim()) newErrors.name = "Please enter your name";
@@ -163,7 +206,6 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     return Object.keys(newErrors).length === 0;
   };
 
-  // ── handlers ──────────────────────────────────────────────────────────────
   const handleNext = () => {
     if (currentStep === 2 && !validateStep2()) return;
     if (currentStep < steps.length) {
@@ -207,11 +249,10 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
       .find((c) => c.value === selectedCurrency)
       ?.label.match(/\((.+)\)/)?.[1] ?? "₹";
 
-  // ── render ────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen w-full bg-background flex flex-col items-center justify-center p-4">
       {/* Progress stepper */}
-      <div className="w-full max-w-md mb-8">
+      <div className="w-full max-w-md sm:max-w-lg lg:max-w-2xl mb-8">
         <div className="flex items-center justify-between">
           {steps.map((step, index) => (
             <div key={step.id} className="flex items-center">
@@ -256,61 +297,49 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         </div>
       </div>
 
-      {/* Card — fixed height */}
-      <Card className="w-full max-w-md flex flex-col">
+      <Card className="w-full max-w-md sm:max-w-lg lg:max-w-2xl flex flex-col">
         {/* ── Step 1: Welcome ─────────────────────────────────────────────── */}
         {currentStep === 1 && (
           <div className={CARD_BODY_CLASS}>
-            <CardHeader className="text-center space-y-3 pb-2 pt-8">
-              <div className="mx-auto w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-                <Zap className="h-10 w-10 text-primary" />
+            <CardHeader className="text-center space-y-2 pb-2 pt-6">
+              <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <Zap className="h-8 w-8 text-primary" />
               </div>
-              <div className="space-y-2">
-                <CardTitle className="text-2xl sm:text-3xl">
-                  Welcome to Pulse
-                </CardTitle>
-                <CardDescription className="text-base">
-                  Track your finance, health, and goals all in one place.
-                  Let&apos;s get you set up in just a few steps.
-                </CardDescription>
+              <CardTitle className="text-2xl sm:text-3xl">
+                Welcome to Pulse
+              </CardTitle>
+              <CardDescription className="text-sm">
+                Your personal dashboard for finance, health, and goals.
+              </CardDescription>
+
+              {/* Privacy notice — prominent but not alarming */}
+              <div className="flex items-center justify-center gap-1.5 mt-1 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 w-fit mx-auto">
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                <span className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">
+                  Works offline · No account needed · Your data stays with you
+                </span>
               </div>
             </CardHeader>
-            <CardContent className="flex-1 flex items-center pt-6">
-              <div className="grid grid-cols-3 gap-3 w-full">
-                {[
-                  {
-                    icon: <Target className="h-6 w-6 text-primary" />,
-                    label: "Set Goals",
-                  },
-                  {
-                    icon: <TrendingUp className="h-6 w-6 text-accent" />,
-                    label: "Track Progress",
-                  },
-                  {
-                    icon: <Heart className="h-6 w-6 text-rose-500" />,
-                    label: "Stay Healthy",
-                  },
-                  {
-                    icon: <Wallet className="h-6 w-6 text-emerald-500" />,
-                    label: "Budget Smart",
-                  },
-                  {
-                    icon: <BarChart3 className="h-6 w-6 text-violet-500" />,
-                    label: "Performance",
-                  },
-                  {
-                    icon: <PiggyBank className="h-6 w-6 text-amber-500" />,
-                    label: "Save More",
-                  },
-                ].map(({ icon, label }) => (
+
+            <CardContent className="flex-1 overflow-y-auto pt-3 pb-2">
+              <p className="text-xs text-muted-foreground text-center mb-3">
+                Here&apos;s what you can do with Pulse:
+              </p>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                {features.map(({ icon, title, description }) => (
                   <div
-                    key={label}
-                    className="flex flex-col items-center p-3 rounded-xl bg-secondary/50 gap-2"
+                    key={title}
+                    className="flex items-start gap-3 p-2.5 rounded-lg bg-secondary/40"
                   >
-                    {icon}
-                    <span className="text-xs text-center text-muted-foreground leading-tight">
-                      {label}
-                    </span>
+                    <div className="mt-0.5 shrink-0">{icon}</div>
+                    <div>
+                      <p className="text-sm font-medium leading-tight">
+                        {title}
+                      </p>
+                      <p className="text-xs text-muted-foreground leading-tight mt-0.5">
+                        {description}
+                      </p>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -326,20 +355,25 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 <User className="h-8 w-8 text-primary" />
               </div>
               <div className="space-y-1">
-                <CardTitle className="text-xl">Create Your Profile</CardTitle>
+                <CardTitle className="text-xl">
+                  Set Up Your Local Profile
+                </CardTitle>
                 <CardDescription>
-                  Tell us about yourself and set up a secure PIN.
+                  This stays on your device — no sign-up, no server, no
+                  verification email.
                 </CardDescription>
               </div>
             </CardHeader>
+
             <CardContent className="flex-1 flex flex-col justify-center space-y-4 py-4">
               {/* Name */}
               <div className="space-y-1.5">
                 <label htmlFor="name" className="text-sm font-medium">
-                  Full Name
+                  Your Name
                 </label>
                 <Input
                   id="name"
+                  data-cy="onboarding-name-input"
                   placeholder="Enter your name"
                   value={name}
                   onChange={(e) => {
@@ -354,9 +388,13 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                   )}
                 />
                 {errors.name && (
-                  <p className="text-xs text-destructive">{errors.name}</p>
+                  <p className="text-xs text-destructive" data-cy="onboarding-name-error">{errors.name}</p>
                 )}
-              </div>
+                <p className="text-xs text-muted-foreground">
+                  Shown on your dashboard to personalise the experience.
+                </p>
+              </div
+>
 
               {/* Email */}
               <div className="space-y-1.5">
@@ -365,6 +403,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 </label>
                 <Input
                   id="email"
+                  data-cy="onboarding-email-input"
                   type="email"
                   inputMode="email"
                   placeholder="you@example.com"
@@ -381,17 +420,19 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                   )}
                 />
                 {errors.email && (
-                  <p className="text-xs text-destructive">{errors.email}</p>
+                  <p className="text-xs text-destructive" data-cy="onboarding-email-error">{errors.email}</p>
                 )}
                 <p className="text-xs text-muted-foreground">
-                  Used to identify your account — no emails are sent.
+                  Used as a local profile ID — not an account. We never send
+                  emails or connect to the internet.
                 </p>
-              </div>
+              </div
+>
 
               {/* PIN */}
               <div className="space-y-1.5">
                 <label className="text-sm font-medium">6-Digit PIN</label>
-                <InputOTP maxLength={6} value={pin} onChange={handlePinChange}>
+                <InputOTP maxLength={6} value={pin} onChange={handlePinChange} data-cy="onboarding-pin-input">
                   <InputOTPGroup>
                     {[0, 1, 2, 3, 4, 5].map((i) => (
                       <InputOTPSlot
@@ -406,13 +447,15 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                   </InputOTPGroup>
                 </InputOTP>
                 {errors.pin ? (
-                  <p className="text-xs text-destructive">{errors.pin}</p>
+                  <p className="text-xs text-destructive" data-cy="onboarding-pin-error">{errors.pin}</p>
                 ) : (
                   <p className="text-xs text-muted-foreground">
-                    You&apos;ll use this PIN to unlock the app.
+                    Acts as a screen lock when you step away. Stored only on
+                    this device.
                   </p>
                 )}
-              </div>
+              </div
+>
             </CardContent>
           </div>
         )}
@@ -432,12 +475,12 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
               </div>
             </CardHeader>
             <CardContent className="flex-1 flex flex-col justify-start space-y-4 py-4 overflow-y-auto">
-              {/* Currency */}
               <div className="space-y-1.5">
                 <label className="text-sm font-medium">Currency</label>
                 <Select
                   value={selectedCurrency}
                   onValueChange={setSelectedCurrency}
+                  data-cy="onboarding-currency-select"
                 >
                   <SelectTrigger className="h-11">
                     <SelectValue />
@@ -450,9 +493,9 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </div
+>
 
-              {/* Monthly income */}
               <div className="space-y-1.5">
                 <label className="text-sm font-medium">
                   Monthly Income{" "}
@@ -465,6 +508,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                     {currencySymbol}
                   </span>
                   <Input
+                    data-cy="onboarding-income-input"
                     type="number"
                     inputMode="numeric"
                     placeholder="0"
@@ -475,7 +519,6 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 </div>
               </div>
 
-              {/* Savings goal */}
               <div className="space-y-1.5">
                 <label className="text-sm font-medium">
                   Monthly Savings Goal{" "}
@@ -488,6 +531,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                     {currencySymbol}
                   </span>
                   <Input
+                    data-cy="onboarding-savings-input"
                     type="number"
                     inputMode="numeric"
                     placeholder="0"
@@ -498,7 +542,6 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 </div>
               </div>
 
-              {/* Budget categories */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">
                   Budget Categories{" "}
@@ -514,6 +557,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                         key={cat.id}
                         type="button"
                         onClick={() => toggleBudgetCat(cat.id)}
+                        data-cy={`onboarding-budget-cat-${cat.id}`}
                         className={cn(
                           "flex items-center gap-2 px-3 py-2 rounded-lg border text-sm text-left transition-all",
                           selected
@@ -543,53 +587,62 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 <Target className="h-8 w-8 text-primary" />
               </div>
               <div className="space-y-1">
-                <CardTitle className="text-xl">Choose Your Goals</CardTitle>
+                <CardTitle className="text-xl">
+                  What do you want to improve?
+                </CardTitle>
                 <CardDescription>
-                  Select the areas you want to focus on. You can change these
-                  later.
+                  Pick the areas that matter most to you. You can always change
+                  these later.
                 </CardDescription>
               </div>
             </CardHeader>
             <CardContent className="flex-1 flex flex-col pt-4 overflow-y-auto">
-              <div className="grid grid-cols-2 gap-2.5 flex-1">
-                {goalPresets.map((goal) => (
-                  <button
-                    key={goal.id}
-                    type="button"
-                    onClick={() => toggleGoal(goal.id)}
-                    className={cn(
-                      "relative p-3.5 rounded-xl border-2 text-left transition-all duration-200",
-                      selectedGoals.includes(goal.id)
-                        ? "border-primary bg-primary/5 ring-2 ring-primary/20"
-                        : "border-border hover:border-primary/50 hover:bg-secondary/50",
-                    )}
-                  >
-                    <div
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 flex-1">
+                {goalPresets.map((goal) => {
+                  const isSelected = selectedGoals.includes(goal.id);
+                  return (
+                    <button
+                      key={goal.id}
+                      type="button"
+                      onClick={() => toggleGoal(goal.id)}
+                      data-cy={`onboarding-goal-${goal.id}`}
                       className={cn(
-                        "w-10 h-10 rounded-lg flex items-center justify-center mb-2.5 border",
-                        goal.color,
+                        "relative flex items-start gap-3 p-3 rounded-xl border-2 text-left transition-all duration-200",
+                        isSelected
+                          ? "border-primary bg-primary/5 ring-2 ring-primary/20"
+                          : "border-border hover:border-primary/50 hover:bg-secondary/50",
                       )}
                     >
-                      {goal.icon}
-                    </div>
-                    <h3 className="font-medium text-sm leading-tight">
-                      {goal.title}
-                    </h3>
-                    <p className="text-xs text-muted-foreground mt-0.5 leading-tight">
-                      {goal.description}
-                    </p>
-                    {selectedGoals.includes(goal.id) && (
-                      <div className="absolute top-2 right-2">
-                        <CheckCircle2 className="h-4 w-4 text-primary" />
+                      <div
+                        className={cn(
+                          "w-9 h-9 rounded-lg flex items-center justify-center border shrink-0 mt-0.5",
+                          goal.color,
+                        )}
+                      >
+                        {goal.icon}
                       </div>
-                    )}
-                  </button>
-                ))}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm leading-tight">
+                          {goal.title}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {goal.description}
+                        </p>
+                        <p className="text-xs text-muted-foreground/70 mt-0.5 italic">
+                          {goal.example}
+                        </p>
+                      </div>
+                      {isSelected && (
+                        <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
               <p className="text-xs text-center text-muted-foreground pt-3">
                 {selectedGoals.length === 0
-                  ? "Select at least one goal, or skip to continue"
-                  : `${selectedGoals.length} goal${selectedGoals.length > 1 ? "s" : ""} selected`}
+                  ? "Select at least one, or skip to continue"
+                  : `${selectedGoals.length} area${selectedGoals.length > 1 ? "s" : ""} selected`}
               </p>
             </CardContent>
           </div>
@@ -598,52 +651,52 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         {/* ── Step 5: Finish ───────────────────────────────────────────────── */}
         {currentStep === 5 && (
           <div className={CARD_BODY_CLASS}>
-            <CardHeader className="text-center space-y-3 pb-2 pt-8">
-              <div className="mx-auto w-20 h-20 rounded-full bg-accent/10 flex items-center justify-center">
-                <CheckCircle2 className="h-10 w-10 text-accent" />
+            <CardHeader className="text-center space-y-2 pb-2 pt-6 shrink-0">
+              <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <CheckCircle2 className="h-8 w-8 text-primary" />
               </div>
-              <div className="space-y-1">
-                <CardTitle className="text-2xl">You&apos;re All Set!</CardTitle>
-                <CardDescription className="text-base">
-                  Welcome, {name || "friend"}! Your Pulse dashboard is ready.
-                </CardDescription>
-              </div>
+              <CardTitle className="text-xl">You're All Set!</CardTitle>
+              <CardDescription>
+                Welcome, {name || "friend"}! Your Pulse dashboard is ready.
+              </CardDescription>
             </CardHeader>
-            <CardContent className="flex-1 flex flex-col justify-center py-4 space-y-4">
-              {/* Summary card */}
-              <div className="p-4 rounded-xl bg-secondary/50 space-y-2.5">
-                <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wider">
+
+            {/* ↓ overflow-y-auto here — same pattern as steps 3 & 4 */}
+            <CardContent className="flex-1 overflow-y-auto py-3 flex flex-col gap-3">
+              {/* Summary */}
+              <div className="p-3 rounded-xl bg-secondary/50 space-y-2">
+                <h4 className="font-medium text-xs text-muted-foreground uppercase tracking-wider">
                   Your setup
                 </h4>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3">
-                    <User className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2.5">
+                    <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                     <span className="text-sm">{name || "User"}</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <div className="flex items-center gap-2.5">
+                    <Mail className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                     <span className="text-sm truncate">{email}</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <DollarSign className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <div className="flex items-center gap-2.5">
+                    <DollarSign className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                     <span className="text-sm">
                       {currencies.find((c) => c.value === selectedCurrency)
                         ?.label ?? selectedCurrency}
                       {monthlyIncome &&
-                        ` · Income ${currencySymbol}${Number(monthlyIncome).toLocaleString()}/mo`}
+                        ` · ${currencySymbol}${Number(monthlyIncome).toLocaleString()}/mo`}
                     </span>
                   </div>
                   {selectedBudgetCats.length > 0 && (
-                    <div className="flex items-center gap-3">
-                      <Wallet className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <div className="flex items-center gap-2.5">
+                      <Wallet className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                       <span className="text-sm">
                         {selectedBudgetCats.length} budget categor
                         {selectedBudgetCats.length > 1 ? "ies" : "y"}
                       </span>
                     </div>
                   )}
-                  <div className="flex items-center gap-3">
-                    <Target className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <div className="flex items-center gap-2.5">
+                    <Target className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                     <span className="text-sm">
                       {selectedGoals.length > 0
                         ? `${selectedGoals.length} focus area${selectedGoals.length > 1 ? "s" : ""}`
@@ -663,7 +716,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                       <div
                         key={goalId}
                         className={cn(
-                          "px-2.5 py-1 rounded-full text-xs font-medium border flex items-center gap-1.5",
+                          "px-2 py-0.5 rounded-full text-xs font-medium border flex items-center gap-1",
                           goal.color,
                         )}
                       >
@@ -674,11 +727,28 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                   })}
                 </div>
               )}
+
+              {/* Local storage notice */}
+              <div className="flex items-start gap-2.5 p-3 rounded-xl border border-emerald-500/20 bg-emerald-500/8">
+                <ShieldCheck className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                    Private by design — your data never leaves this device
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                    Pulse is built as a desktop app (Electron) and works offline
+                    as a PWA. We store everything locally so it works without
+                    internet, loads instantly, and you never need an account or
+                    subscription. There's no server — nobody can access your
+                    data but you.
+                  </p>
+                </div>
+              </div>
             </CardContent>
           </div>
         )}
 
-        {/* Navigation — always outside the fixed-height body */}
+        {/* Navigation */}
         <CardContent className="pt-0 pb-6">
           <div className="flex gap-3">
             {currentStep > 1 && (
@@ -687,6 +757,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 variant="outline"
                 size="lg"
                 onClick={handleBack}
+                data-cy="onboarding-back-button"
                 className="flex-1 h-12 text-base"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
@@ -697,6 +768,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
               type="button"
               size="lg"
               onClick={handleNext}
+              data-cy="onboarding-next-button"
               className={cn(
                 "h-12 text-base",
                 currentStep === 1 ? "w-full" : "flex-1",

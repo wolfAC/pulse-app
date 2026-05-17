@@ -1,4 +1,5 @@
 "use client";
+
 import { useRouter } from "next/navigation";
 import { BudgetDialog } from "@/components/finance/budget-dialog";
 

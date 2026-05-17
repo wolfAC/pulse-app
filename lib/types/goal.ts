@@ -1,5 +1,4 @@
 export type Priority = "low" | "medium" | "high";
-export type GoalStatus = "active" | "completed" | "paused";
 
 export interface Milestone {
   id: string;
@@ -13,19 +12,21 @@ export interface Task {
   completed: boolean;
 }
 
-export interface Goal {
+export type Goal = {
   id: string;
   userEmail: string;
   title: string;
   description: string;
-  progress: number;
   priority: Priority;
-  status: GoalStatus;
-  dueDate: string;
-  milestones: Milestone[];
-  tasks: Task[];
+  status: "active" | "completed";
+  progress: number;
+  dueDate?: string;
+  milestones?: Milestone[];
+  tasks?: Task[];
+  type?: "goal" | "habit";
+  completedDates?: string[];
   createdAt: number;
-}
+};
 
 export interface GoalsState {
   goals: Goal[];

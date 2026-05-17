@@ -3,16 +3,17 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ViewToggle } from "@/components/ui/view-toggle";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Review, ReviewPeriod } from "@/lib/types/performance";
 import { RootState } from "@/store";
 import { deleteReview } from "@/store/slices/performance";
-import { LayoutGrid, List, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { NavTabs } from "@/components/ui/nav-tabs";
 import { ReviewCard } from "./review-card";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 type FilterType = "all" | ReviewPeriod;
 
@@ -72,50 +73,28 @@ export function PerformanceTracker() {
         </div>
 
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4">
-          <Tabs
+          <NavTabs
             value={filter}
-            onValueChange={(v) => setFilter(v as FilterType)}
-          >
-            <TabsList
-              className={`h-auto bg-transparent border p-1 ${
-                isMobile ? "w-full" : ""
-              }`}
-            >
-              <TabsTrigger value="all" className="px-3 py-1.5">
-                All ({reviews.length})
-              </TabsTrigger>
-
-              <TabsTrigger value="daily" className="px-3 py-1.5">
-                Daily ({reviews.filter((r) => r.period === "daily").length})
-              </TabsTrigger>
-
-              <TabsTrigger value="weekly" className="px-3 py-1.5">
-                Weekly ({reviews.filter((r) => r.period === "weekly").length})
-              </TabsTrigger>
-
-              <TabsTrigger value="monthly" className="px-3 py-1.5">
-                Monthly ({reviews.filter((r) => r.period === "monthly").length})
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+            onValueChange={setFilter}
+            tabs={[
+              { value: "all", label: `All (${reviews.length})` },
+              {
+                value: "daily",
+                label: `Daily (${reviews.filter((r) => r.period === "daily").length})`,
+              },
+              {
+                value: "weekly",
+                label: `Weekly (${reviews.filter((r) => r.period === "weekly").length})`,
+              },
+              {
+                value: "monthly",
+                label: `Monthly (${reviews.filter((r) => r.period === "monthly").length})`,
+              },
+            ]}
+          />
 
           {!isMobile && (
-            <Tabs
-              value={viewMode}
-              onValueChange={(v) => setViewMode(v as "grid" | "list")}
-            >
-              <TabsList className="h-auto bg-transparent border p-1">
-                <TabsTrigger value="grid" className="gap-1.5 px-3 py-1.5">
-                  <LayoutGrid className="size-4" />
-                  <span className="sr-only sm:not-sr-only">Grid</span>
-                </TabsTrigger>
-
-                <TabsTrigger value="list" className="gap-1.5 px-3 py-1.5">
-                  <List className="size-4" />
-                  <span className="sr-only sm:not-sr-only">List</span>
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+            <ViewToggle value={viewMode} onValueChange={setViewMode} />
           )}
         </div>
       </div>

@@ -1,19 +1,19 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { NavTabs } from "@/components/ui/nav-tabs";
 import { PageHeader } from "@/components/ui/page-header";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ViewToggle } from "@/components/ui/view-toggle";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { Goal } from "@/lib/types/goal";
 import { RootState } from "@/store/index";
 import { deleteGoal } from "@/store/slices/goals";
-import { LayoutGrid, List, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Card, CardContent } from "../ui/card";
 import { GoalCard } from "./goal-card";
-import { useIsMobile } from "@/hooks/use-mobile";
-
 type TabValue = "active" | "completed" | "all";
 
 export function GoalsTracker() {
@@ -66,47 +66,24 @@ export function GoalsTracker() {
         </div>
 
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4">
-          <Tabs
+          <NavTabs
             value={activeTab}
-            onValueChange={(v) => setActiveTab(v as TabValue)}
-          >
-            <TabsList
-              className={`h-auto bg-transparent border p-1 ${
-                isMobile ? "w-full" : ""
-              }`}
-            >
-              <TabsTrigger value="active" className="px-3 py-1.5">
-                Active ({goals.filter((g) => g.status === "active").length})
-              </TabsTrigger>
-
-              <TabsTrigger value="completed" className="px-3 py-1.5">
-                Completed (
-                {goals.filter((g) => g.status === "completed").length})
-              </TabsTrigger>
-
-              <TabsTrigger value="all" className="px-3 py-1.5">
-                All ({goals.length})
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+            onValueChange={setActiveTab}
+            tabs={[
+              {
+                value: "active",
+                label: `Active (${goals.filter((g) => g.status === "active").length})`,
+              },
+              {
+                value: "completed",
+                label: `Completed (${goals.filter((g) => g.status === "completed").length})`,
+              },
+              { value: "all", label: `All (${goals.length})` },
+            ]}
+          />
 
           {!isMobile && (
-            <Tabs
-              value={viewMode}
-              onValueChange={(v) => setViewMode(v as "grid" | "list")}
-            >
-              <TabsList className="h-auto bg-transparent border p-1">
-                <TabsTrigger value="grid" className="gap-1.5 px-3 py-1.5">
-                  <LayoutGrid className="size-4" />
-                  <span className="sr-only sm:not-sr-only">Grid</span>
-                </TabsTrigger>
-
-                <TabsTrigger value="list" className="gap-1.5 px-3 py-1.5">
-                  <List className="size-4" />
-                  <span className="sr-only sm:not-sr-only">List</span>
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+            <ViewToggle value={viewMode} onValueChange={setViewMode} />
           )}
         </div>
       </div>
